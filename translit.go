@@ -28,8 +28,8 @@ var (
 	suffmap     = strings.NewReplacer(")", ")", "'", "’", "“", "”", "\"", "”", "‘", "’", "…", "…", "!", "!", ",", ",", "?", "?", ".", ".")
 	fixdigraphs = regexp.MustCompile(`\p{Lu}*(Dž|Nj|Lj)\p{Lu}+(Dž|Nj|Lj)?\p{Lu}*`)
 
-	doit = true
-	version = "0.1"
+	doit    = true
+	version = "0.2"
 
 	rdr  = bufio.NewReader(os.Stdin)
 	out  = bufio.NewWriter(os.Stdout)
@@ -913,7 +913,7 @@ func Pomoc() {
 	fmt.Fprintf(flag.CommandLine.Output(), "Ово је филтер %s верзија %s\nСаставио eevan78, 2024\n\n", os.Args[0], version)
 	fmt.Fprintf(flag.CommandLine.Output(), "Филтер чита UTF-8 кодирани текст са стандардног улаза и исписује га на\nстандардни излаз пресловљен сагласно са наведеним заставицама:\n")
 	flag.PrintDefaults()
-	fmt.Fprintf(flag.CommandLine.Output(), "\nМора да се наведе по једна и само једна заставица из обе групе Смер и Формат.\nЦеле речи између „<|” и „|>” у простом тексту или између „&lt;|” и „&gt;|” у\n(X)HTML се не пресловљавају у латиницу.\n\nПримери:\n%s -l2c -html\t\tпреслови (X)HTML у ћирилицу\n%s -text -c2l\t\tпреслови прости текст у латиницу\n", os.Args[0], os.Args[0])
+	fmt.Fprintf(flag.CommandLine.Output(), "\nМора да се наведе по једна и само једна заставица из обе групе Смер и Формат.\nЦеле речи између „<|” и „|>” у простом тексту или унутар <span lang=\"sr-Latn\"></span>\nелемента у (X)HTML се не пресловљавају у ћирилицу.\n\nПримери:\n%s -l2c -html\t\tпреслови (X)HTML у ћирилицу\n%s -text -c2l\t\tпреслови прости текст у латиницу\n", os.Args[0], os.Args[0])
 }
 
 func allWhite(s string) bool {
@@ -929,25 +929,57 @@ func allWhite(s string) bool {
 
 func traverseNode(n *html.Node) {
 	switch n.Type {
+	case html.ElementNode:
+		namespace := ""
+		notexist := true
+		// Properly adjust the lang attribute, or add it if is missing
+		if n.Data == "html" {
+			if *l2cPtr {
+				for i, atribut := range n.Attr {
+					if atribut.Key == "lang" || atribut.Key == "xml:lang" {
+						n.Attr[i].Val = "sr-Cyrl-t-sr-Latn"
+						notexist = false
+					}
+					if atribut.Key == "xml:lang" || atribut.Key == "xmlns" {
+						namespace = "xml"
+					}
+				}
+				if notexist {
+					n.Attr = append(n.Attr, html.Attribute{namespace, "lang", "sr-Cyrl-t-sr-Latn"})
+				}
+			} else if *c2lPtr {
+				for i, atribut := range n.Attr {
+					if atribut.Key == "lang" || atribut.Key == "xml:lang" {
+						n.Attr[i].Val = "sr-Latn-t-sr-Cyrl"
+						notexist = false
+					}
+					if atribut.Key == "xml:lang" || atribut.Key == "xmlns" {
+						namespace = "xml"
+					}
+				}
+				if notexist {
+					n.Attr = append(n.Attr, html.Attribute{namespace, "lang", "sr-Latn-t-sr-Cyrl"})
+				}
+			}
+		}
 	case html.TextNode:
+		// Transliterate if text is not inside script or style element
 		if !allWhite(n.Data) && n.Parent.Type == html.ElementNode && (n.Parent.Data != "script" && n.Parent.Data != "style") {
 			nodeprefix := whitepref.FindString(n.Data)
 			nodesuffix := whitesuff.FindString(n.Data)
 			words := strings.Fields(n.Data)
-			for n := range words {
-				if strings.HasPrefix(words[n], "<|") {
-					doit = false
-					words[n] = strings.TrimPrefix(words[n], "<|")
-				}
-				if *l2cPtr {
-					index := transliterationIndexOfWordStartsWith(strings.ToLower(words[n]), wholeForeignWords, "-")
+			for w := range words {
+				// Do not transliterate to cyrillic if the parent element is span which has the lang attribut with the value "sr-Latn"
+				if *l2cPtr == true && !(n.Parent.Data == "span" && (n.Parent.Attr[0].Key == "lang" || n.Parent.Attr[0].Key == "xml:lang") && n.Parent.Attr[0].Val == "sr-Latn") {
+					index := transliterationIndexOfWordStartsWith(strings.ToLower(words[w]), wholeForeignWords, "-")
 					if index >= 0 {
-						words[n] = string(words[n][:index]) + l2c(string(words[n][index:]))
-					} else if !looksLikeForeignWord(words[n]) {
-						words[n] = l2c(words[n])
+						words[w] = string(words[w][:index]) + l2c(string(words[w][index:]))
+					} else if !looksLikeForeignWord(words[w]) {
+						words[w] = l2c(words[w])
 					}
-				} else if *c2lPtr {
-					words[n] = c2l(words[n])
+					// Do not transliterate to latin if the parent element is span which has the lang attribut with the value "sr-Cyrl"
+				} else if *c2lPtr == true && !(n.Parent.Data == "span" && (n.Parent.Attr[0].Key == "lang" || n.Parent.Attr[0].Key == "xml:lang") && n.Parent.Attr[0].Val == "sr-Cyrl") {
+					words[w] = c2l(words[w])
 				}
 			}
 			// Preserve the whitespace at the beginning and at the end of the node data
