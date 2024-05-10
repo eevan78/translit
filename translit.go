@@ -794,9 +794,9 @@ func transliterationIndexOfWordStartsWith(word string, array []string, charSepar
 	if processed == "" {
 		return -1
 	}
-	for _, wrd := range array {
-		if strings.HasPrefix(word, wrd+charSeparator) {
-			return len(wrd + charSeparator)
+	for _, arrayWord := range array {
+		if strings.HasPrefix(word, arrayWord+charSeparator) {
+			return len(arrayWord + charSeparator)
 		}
 	}
 
@@ -913,7 +913,7 @@ func Pomoc() {
 	fmt.Fprintf(flag.CommandLine.Output(), "Ово је филтер %s верзија %s\nСаставио eevan78, 2024\n\n", os.Args[0], version)
 	fmt.Fprintf(flag.CommandLine.Output(), "Филтер чита UTF-8 кодирани текст са стандардног улаза и исписује га на\nстандардни излаз пресловљен сагласно са наведеним заставицама:\n")
 	flag.PrintDefaults()
-	fmt.Fprintf(flag.CommandLine.Output(), "\nМора да се наведе по једна и само једна заставица из обе групе Смер и Формат.\nЦеле речи између „<|” и „|>” у простом тексту или унутар <span lang=\"sr-Latn\"></span>\nелемента у (X)HTML се не пресловљавају у ћирилицу.\n\nПримери:\n%s -l2c -html\t\tпреслови (X)HTML у ћирилицу\n%s -text -c2l\t\tпреслови прости текст у латиницу\n", os.Args[0], os.Args[0])
+	fmt.Fprintf(flag.CommandLine.Output(), "\nМора да се наведе по једна и само једна заставица из обе групе Смер и Формат.\nЦеле речи између „<|” и „|>” у простом тексту се не пресловљавају у ћирилицу.\nТекст унутар <span lang=\"sr-Latn\"></span> елемента у (X)HTML се не пресловљава у\nћирилицу, а текст унутар <span lang=\"sr-Cyrl\"></span> се не пресловљава у латиницу.\n\nПримери:\n%s -l2c -html\t\tпреслови (X)HTML у ћирилицу\n%s -text -c2l\t\tпреслови прости текст у латиницу\n", os.Args[0], os.Args[0])
 }
 
 func allWhite(s string) bool {
@@ -932,15 +932,15 @@ func traverseNode(n *html.Node) {
 	case html.ElementNode:
 		namespace := ""
 		notexist := true
-		// Properly adjust the lang attribute, or add it if is missing
+		// Properly adjust the lang attribute, or add it if it's missing
 		if n.Data == "html" {
 			if *l2cPtr {
-				for i, atribut := range n.Attr {
-					if atribut.Key == "lang" || atribut.Key == "xml:lang" {
+				for i, attrib := range n.Attr {
+					if attrib.Key == "lang" || attrib.Key == "xml:lang" {
 						n.Attr[i].Val = "sr-Cyrl-t-sr-Latn"
 						notexist = false
 					}
-					if atribut.Key == "xml:lang" || atribut.Key == "xmlns" {
+					if attrib.Key == "xml:lang" || attrib.Key == "xmlns" {
 						namespace = "xml"
 					}
 				}
@@ -948,12 +948,12 @@ func traverseNode(n *html.Node) {
 					n.Attr = append(n.Attr, html.Attribute{namespace, "lang", "sr-Cyrl-t-sr-Latn"})
 				}
 			} else if *c2lPtr {
-				for i, atribut := range n.Attr {
-					if atribut.Key == "lang" || atribut.Key == "xml:lang" {
+				for i, attrib := range n.Attr {
+					if attrib.Key == "lang" || attrib.Key == "xml:lang" {
 						n.Attr[i].Val = "sr-Latn-t-sr-Cyrl"
 						notexist = false
 					}
-					if atribut.Key == "xml:lang" || atribut.Key == "xmlns" {
+					if attrib.Key == "xml:lang" || attrib.Key == "xmlns" {
 						namespace = "xml"
 					}
 				}
@@ -963,13 +963,13 @@ func traverseNode(n *html.Node) {
 			}
 		}
 	case html.TextNode:
-		// Transliterate if text is not inside script or style element
+		// Transliterate if text is not inside a script or a style element
 		if !allWhite(n.Data) && n.Parent.Type == html.ElementNode && (n.Parent.Data != "script" && n.Parent.Data != "style") {
 			nodeprefix := whitepref.FindString(n.Data)
 			nodesuffix := whitesuff.FindString(n.Data)
 			words := strings.Fields(n.Data)
 			for w := range words {
-				// Do not transliterate to cyrillic if the parent element is span which has the lang attribut with the value "sr-Latn"
+				// Do not transliterate to cyrillic if the parent element is span that has a lang attribute with the value "sr-Latn"
 				if *l2cPtr == true && !(n.Parent.Data == "span" && (n.Parent.Attr[0].Key == "lang" || n.Parent.Attr[0].Key == "xml:lang") && n.Parent.Attr[0].Val == "sr-Latn") {
 					index := transliterationIndexOfWordStartsWith(strings.ToLower(words[w]), wholeForeignWords, "-")
 					if index >= 0 {
@@ -977,7 +977,7 @@ func traverseNode(n *html.Node) {
 					} else if !looksLikeForeignWord(words[w]) {
 						words[w] = l2c(words[w])
 					}
-					// Do not transliterate to latin if the parent element is span which has the lang attribut with the value "sr-Cyrl"
+					// Do not transliterate to latin if the parent element is span that has a lang attribut with the value "sr-Cyrl"
 				} else if *c2lPtr == true && !(n.Parent.Data == "span" && (n.Parent.Attr[0].Key == "lang" || n.Parent.Attr[0].Key == "xml:lang") && n.Parent.Attr[0].Val == "sr-Cyrl") {
 					words[w] = c2l(words[w])
 				}
