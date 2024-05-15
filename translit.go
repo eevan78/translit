@@ -930,10 +930,10 @@ func allWhite(s string) bool {
 func traverseNode(n *html.Node) {
 	switch n.Type {
 	case html.ElementNode:
-		namespace := ""
-		notexist := true
 		// Properly adjust the lang attribute, or add it if it's missing
 		if n.Data == "html" {
+			namespace := ""
+			notexist := true
 			if *l2cPtr {
 				for i, attrib := range n.Attr {
 					if attrib.Key == "lang" || attrib.Key == "xml:lang" {
