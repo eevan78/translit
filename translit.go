@@ -22,9 +22,9 @@ import (
 var (
 	whitepref   = regexp.MustCompile(`^[\s\p{Zs}]+`)
 	whitesuff   = regexp.MustCompile(`[\s\p{Zs}]+$`)
-	pref        = regexp.MustCompile(`^[('“"‘…]+`)
+	pref        = regexp.MustCompile(`^[('“”"‘…]+`)
 	suff        = regexp.MustCompile(`[)'“"‘…,!?\.]+$`)
-	prefmap     = strings.NewReplacer("(", "(", "'", "’", "“", "„", "\"", "„", "‘", "’", "…", "…")
+	prefmap     = strings.NewReplacer("(", "(", "'", "’", "“", "„", "”", "„", "\"", "„", "‘", "’", "…", "…")
 	suffmap     = strings.NewReplacer(")", ")", "'", "’", "“", "”", "\"", "”", "‘", "’", "…", "…", "!", "!", ",", ",", "?", "?", ".", ".")
 	fixdigraphs = regexp.MustCompile(`\p{Lu}*(Dž|Nj|Lj)\p{Lu}+(Dž|Nj|Lj)?\p{Lu}*`)
 
