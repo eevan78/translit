@@ -88,4 +88,4 @@ go build -compiler gc -ldflags="-w -s" .
 Ако је све у реду, приказаће се кратко упутство за употребу.
 
 # Лиценца
-Ово је софтвер отвореног кода, који се слободно може користити у оквиру [MIT лиценце.](https://github.com/eevan78/translit/blob/main/LICENSE)
+Ово је софтвер отвореног кода, који се слободно може користити у оквиру [MIT лиценце.](https://github.com/eevan78/translit/blob/main/LICENSE.md)
