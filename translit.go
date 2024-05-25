@@ -999,7 +999,7 @@ func traverseNode(n *html.Node) {
 func main() {
 	flag.Usage = Pomoc
 	flag.Parse()
-	if !(((!*l2cPtr && *c2lPtr) || (*l2cPtr && !*c2lPtr)) && ((!*htmlPtr && *textPtr) || (*htmlPtr && !*textPtr)) && flag.NFlag() == 2) {
+	if flag.NFlag() != 2 || *l2cPtr == *c2lPtr || *htmlPtr == *textPtr {
 		Pomoc()
 		os.Exit(0)
 	}
