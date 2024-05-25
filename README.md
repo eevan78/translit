@@ -1,4 +1,4 @@
-# translit
+    # translit
 Line filter that transliterate between the two Serbian scripts.
 
 [Линијски филтер](https://en.wikipedia.org/wiki/Filter_(software)) који врши пресловљавање писама која се користе у српском језику.
@@ -9,12 +9,12 @@ Line filter that transliterate between the two Serbian scripts.
 
 # Како ради
 Програм прихвата две заставице. Једнoм се дефинише смер пресловљавања:
-* латиница у ћирилицу (-l2c)
-* ћирилица у латиницу (-c2l)
+* -l2c латиница у ћирилицу
+* -c2l ћирилица у латиницу
 
 а другом се наводи формат улаза:
-* прости (чисти) текст (-text)
-* (X)HTML (-html)
+* -text прости (чисти) текст
+* -html (X)HTML
 
 Обавезно морају да се наведу две заставице, једна за смер и једна за формат улаза. У сваком другом случају, исписује се кратка порука о употреби.
 
@@ -86,6 +86,27 @@ go build -compiler gc -ldflags="-w -s" .
 .\translit.exe
 ```
 Ако је све у реду, приказаће се кратко упутство за употребу.
+
+# Употреба
+
+## Линукс
+
+Претпоставимо да je програм израђен наредбом која је дата у одељку Изградња. Следећом командом се врши пресловљавање html фајла из латинице у ћирилицу. Овом командом се улазни фајл преусмерава на страндарни улаз `translit` програма, а његов стандардни излаз се преусмерава на излазни фајл.
+```
+./translit -l2c -html <`putanja_do_ulaznog_fajla` >`putanja _do__izlaznog_fajla`
+```
+На пример:
+```
+./translit -l2c -html <~/Downloads/vest.html >~/Downloads/preslovljeno/vest_cir.html
+```
+Следећом командом се врши пресловљавање txt фајла из ћирилице у латиницу.
+```
+./translit -c2l -txt <`putanja_do_ulaznog_fajla` >`putanja _do__izlaznog_fajla`
+```
+На пример:
+```
+./translit -c2l -txt <~/Downloads/nabavka.txt >~/Downloads/preslovljeno/nabavka_lat.txt
+```
 
 # Лиценца
 Ово је софтвер отвореног кода, који се слободно може користити у оквиру [MIT лиценце.](https://github.com/eevan78/translit/blob/main/LICENSE.md)
