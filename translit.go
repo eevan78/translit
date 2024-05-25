@@ -996,6 +996,63 @@ func traverseNode(n *html.Node) {
 	}
 }
 
+func transliterateHtml() {
+	doc, err := html.Parse(rdr)
+	if err != nil {
+		fmt.Fprintln(os.Stdout, "Грешка:", err)
+		os.Exit(1)
+	}
+	traverseNode(doc)
+	if err := html.Render(out, doc); err != nil {
+		fmt.Fprintln(os.Stdout, "Грешка:", err)
+		os.Exit(1)
+	}
+	_ = out.Flush()
+}
+
+func transliterateText() {
+	for {
+		switch line, err := rdr.ReadString('\n'); err {
+		case nil:
+			lineprefix := whitepref.FindString(line)
+			words := strings.Fields(line)
+			for n := range words {
+				if strings.HasPrefix(words[n], "<|") {
+					doit = false
+					words[n] = strings.TrimPrefix(words[n], "<|")
+				}
+				if *l2cPtr {
+					index := transliterationIndexOfWordStartsWith(strings.ToLower(words[n]), wholeForeignWords, "-")
+					if index >= 0 {
+						words[n] = string(words[n][:index]) + l2c(string(words[n][index:]))
+					} else if !looksLikeForeignWord(words[n]) {
+						words[n] = l2c(words[n])
+					}
+				} else if *c2lPtr {
+					words[n] = c2l(words[n])
+				}
+			}
+
+			if lineprefix != "" && lineprefix != "\n" && len(words) != 0 {
+				words[0] = lineprefix + words[0]
+			}
+			outl := strings.Join(words, " ")
+			outl += "\n"
+			if _, err = out1.WriteString(outl); err != nil {
+				fmt.Fprintln(os.Stderr, "Грешка:", err)
+				os.Exit(1)
+			}
+
+		case io.EOF:
+			os.Exit(0)
+
+		default:
+			fmt.Fprintln(os.Stderr, "Грешка:", err)
+			os.Exit(1)
+		}
+	}
+}
+
 func main() {
 	flag.Usage = Pomoc
 	flag.Parse()
@@ -1005,57 +1062,8 @@ func main() {
 	}
 
 	if *htmlPtr {
-		doc, err := html.Parse(rdr)
-		if err != nil {
-			fmt.Fprintln(os.Stdout, "Грешка:", err)
-			os.Exit(1)
-		}
-		traverseNode(doc)
-		if err := html.Render(out, doc); err != nil {
-			fmt.Fprintln(os.Stdout, "Грешка:", err)
-			os.Exit(1)
-		}
-		_ = out.Flush()
+		transliterateHtml()
 	} else if *textPtr {
-		for {
-			switch line, err := rdr.ReadString('\n'); err {
-			case nil:
-				lineprefix := whitepref.FindString(line)
-				words := strings.Fields(line)
-				for n := range words {
-					if strings.HasPrefix(words[n], "<|") {
-						doit = false
-						words[n] = strings.TrimPrefix(words[n], "<|")
-					}
-					if *l2cPtr {
-						index := transliterationIndexOfWordStartsWith(strings.ToLower(words[n]), wholeForeignWords, "-")
-						if index >= 0 {
-							words[n] = string(words[n][:index]) + l2c(string(words[n][index:]))
-						} else if !looksLikeForeignWord(words[n]) {
-							words[n] = l2c(words[n])
-						}
-					} else if *c2lPtr {
-						words[n] = c2l(words[n])
-					}
-				}
-				// Preserve the line indentation
-				if lineprefix != "" && lineprefix != "\n" && len(words) != 0 {
-					words[0] = lineprefix + words[0]
-				}
-				outl := strings.Join(words, " ")
-				outl += "\n"
-				if _, err = out1.WriteString(outl); err != nil {
-					fmt.Fprintln(os.Stderr, "Грешка:", err)
-					os.Exit(1)
-				}
-
-			case io.EOF:
-				os.Exit(0)
-
-			default:
-				fmt.Fprintln(os.Stderr, "Грешка:", err)
-				os.Exit(1)
-			}
-		}
+		transliterateText()
 	}
 }
