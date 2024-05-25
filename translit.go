@@ -9,14 +9,15 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"github.com/porfirion/trie"
-	"golang.org/x/net/html"
 	"io"
 	"os"
 	"regexp"
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/porfirion/trie"
+	"golang.org/x/net/html"
 )
 
 var (
@@ -301,7 +302,6 @@ var (
 		"jazeera",
 		"joomla",
 		"league",
-		"like",
 		"linkedin",
 		"look",
 		"macbook",
@@ -370,6 +370,7 @@ var (
 		"fun",
 		"geographic",
 		"gmbh",
+		"green",
 		"h2o",
 		"hair",
 		"have",
@@ -378,6 +379,7 @@ var (
 		"idjtv",
 		"ii",
 		"iii",
+		"like",
 		"life",
 		"latest",
 		"live",
