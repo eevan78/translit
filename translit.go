@@ -999,13 +999,11 @@ func traverseNode(n *html.Node) {
 func transliterateHtml() {
 	doc, err := html.Parse(rdr)
 	if err != nil {
-		fmt.Fprintln(os.Stdout, "Грешка:", err)
-		os.Exit(1)
+		exitWithError(err)
 	}
 	traverseNode(doc)
 	if err := html.Render(out, doc); err != nil {
-		fmt.Fprintln(os.Stdout, "Грешка:", err)
-		os.Exit(1)
+		exitWithError(err)
 	}
 	_ = out.Flush()
 }
@@ -1039,18 +1037,21 @@ func transliterateText() {
 			outl := strings.Join(words, " ")
 			outl += "\n"
 			if _, err = out1.WriteString(outl); err != nil {
-				fmt.Fprintln(os.Stderr, "Грешка:", err)
-				os.Exit(1)
+				exitWithError(err)
 			}
 
 		case io.EOF:
 			os.Exit(0)
 
 		default:
-			fmt.Fprintln(os.Stderr, "Грешка:", err)
-			os.Exit(1)
+			exitWithError(err)
 		}
 	}
+}
+
+func exitWithError(err error) {
+	fmt.Fprintln(os.Stderr, "Грешка:", err)
+	os.Exit(1)
 }
 
 func main() {
