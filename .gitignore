@@ -23,3 +23,6 @@ go.work
 
 # Goreleaser Dist directory
 dist/
+
+#VSCode debug directory
+.vscode/

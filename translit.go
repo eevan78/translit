@@ -36,10 +36,12 @@ var (
 	out  = bufio.NewWriter(os.Stdout)
 	out1 = os.Stdout
 
-	l2cPtr  = flag.Bool("l2c", false, "`Смер` пресловљавања је латиница у ћирилицу")
-	c2lPtr  = flag.Bool("c2l", false, "`Смер` пресловљавања је ћирилица у латиницу")
-	htmlPtr = flag.Bool("html", false, "`Формат` улаза је (X)HTML")
-	textPtr = flag.Bool("text", false, "`Формат` улаза је прости текст")
+	l2cPtr        = flag.Bool("l2c", false, "`Смер` пресловљавања је латиница у ћирилицу")
+	c2lPtr        = flag.Bool("c2l", false, "`Смер` пресловљавања је ћирилица у латиницу")
+	htmlPtr       = flag.Bool("html", false, "`Формат` улаза је (X)HTML")
+	textPtr       = flag.Bool("text", false, "`Формат` улаза је прости текст")
+	inputFilePtr  = flag.String("i", "", "Путања улазног фајла")
+	outputFilePtr = flag.String("o", "", "Путања улазног фајла")
 
 	tbl = trie.BuildFromMap(map[string]string{
 		"A":   "А",
@@ -1054,17 +1056,53 @@ func exitWithError(err error) {
 	os.Exit(1)
 }
 
-func main() {
+func openInputFile() {
+
+	inputFile, err := os.Open(*inputFilePtr)
+	if err != nil {
+		panic(err)
+	}
+
+	rdr = bufio.NewReader(inputFile)
+
+}
+
+func openOutputFile() {
+
+	outputFile, err := os.Create(*outputFilePtr)
+	if err != nil {
+		panic(err)
+	}
+
+	out = bufio.NewWriter(outputFile)
+
+}
+
+func processFlags() {
 	flag.Usage = Pomoc
 	flag.Parse()
-	if flag.NFlag() != 2 || *l2cPtr == *c2lPtr || *htmlPtr == *textPtr {
+	if *l2cPtr == *c2lPtr || *htmlPtr == *textPtr {
 		Pomoc()
 		os.Exit(0)
 	}
+
+	if *inputFilePtr != "" {
+		openInputFile()
+	}
+
+	if *outputFilePtr != "" {
+		openOutputFile()
+	}
+}
+
+func main() {
+
+	processFlags()
 
 	if *htmlPtr {
 		transliterateHtml()
 	} else if *textPtr {
 		transliterateText()
 	}
+
 }
