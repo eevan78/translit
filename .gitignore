@@ -24,5 +24,8 @@ go.work
 # Goreleaser Dist directory
 dist/
 
-#VSCode debug directory
+# VSCode debug directory
 .vscode/
+
+# kdiff3 file  
+*.orig
