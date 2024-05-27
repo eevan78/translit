@@ -1,4 +1,4 @@
-    # translit
+# translit
 Line filter that transliterate between the two Serbian scripts.
 
 [Линијски филтер](https://en.wikipedia.org/wiki/Filter_(software)) који врши пресловљавање писама која се користе у српском језику.
