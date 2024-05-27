@@ -30,7 +30,7 @@ var (
 	fixdigraphs = regexp.MustCompile(`\p{Lu}*(Dž|Nj|Lj)\p{Lu}+(Dž|Nj|Lj)?\p{Lu}*`)
 
 	doit    = true
-	version = "v0.2.0"
+	version = "v0.2.1"
 
 	rdr  = bufio.NewReader(os.Stdin)
 	out  = bufio.NewWriter(os.Stdout)
