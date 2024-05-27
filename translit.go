@@ -32,16 +32,15 @@ var (
 	doit    = true
 	version = "v0.2.1"
 
-	rdr  = bufio.NewReader(os.Stdin)
-	out  = bufio.NewWriter(os.Stdout)
-	out1 = os.Stdout
+	rdr = bufio.NewReader(os.Stdin)
+	out = bufio.NewWriter(os.Stdout)
 
 	l2cPtr        = flag.Bool("l2c", false, "`Смер` пресловљавања је латиница у ћирилицу")
 	c2lPtr        = flag.Bool("c2l", false, "`Смер` пресловљавања је ћирилица у латиницу")
 	htmlPtr       = flag.Bool("html", false, "`Формат` улаза је (X)HTML")
 	textPtr       = flag.Bool("text", false, "`Формат` улаза је прости текст")
 	inputFilePtr  = flag.String("i", "", "Путања улазног фајла")
-	outputFilePtr = flag.String("o", "", "Путања улазног фајла")
+	outputFilePtr = flag.String("o", "", "Путања излазног фајла")
 
 	tbl = trie.BuildFromMap(map[string]string{
 		"A":   "А",
@@ -1038,9 +1037,10 @@ func transliterateText() {
 			}
 			outl := strings.Join(words, " ")
 			outl += "\n"
-			if _, err = out1.WriteString(outl); err != nil {
+			if _, err = out.WriteString(outl); err != nil {
 				exitWithError(err)
 			}
+			_ = out.Flush()
 
 		case io.EOF:
 			os.Exit(0)
