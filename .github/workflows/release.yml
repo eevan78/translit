@@ -1,7 +1,8 @@
 name: goreleaser
 
 on:
-  pull_request:
+  # Do not run on pull request
+  # pull_request:
   push:
     # run only against tags
     tags:
