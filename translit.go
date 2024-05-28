@@ -969,47 +969,46 @@ func traverseNode(n *html.Node) {
 	case html.TextNode:
 		// Transliterate if text is not inside a script or a style element
 		if !allWhite(n.Data) && n.Parent.Type == html.ElementNode && (n.Parent.Data != "script" && n.Parent.Data != "style") {
+			var attribute string
+
+			if *l2cPtr {
+				attribute = "sr-Latn"
+			} else { // *c2lPtr
+				attribute = "sr-Cyrl"
+			}
+
+			skipTranslit := false
+			if n.Parent.Data == "span" {
+				for _, k := range n.Parent.Attr {
+					if (k.Key == "lang" || k.Key == "xml:lang") && k.Val == attribute {
+						skipTranslit = true
+						break
+					}
+				}
+
+			}
+
+			if skipTranslit {
+				break // do not transliterate node
+			}
+
 			nodeprefix := whitepref.FindString(n.Data)
 			nodesuffix := whitesuff.FindString(n.Data)
 			words := strings.Fields(n.Data)
+
 			for w := range words {
-				// Do not transliterate to cyrillic if the parent element is span that has a lang attribute with the value "sr-Latn"
-				if *l2cPtr == true {
-					if n.Parent.Data == "span" {
-						skip := false
-						for _, k := range n.Parent.Attr {
-							if (k.Key == "lang" || k.Key == "xml:lang") && k.Val == "sr-Latn" {
-								skip = true
-								break
-							}
-						}
-						if skip {
-							continue
-						}
-					}
+				if *l2cPtr {
 					index := transliterationIndexOfWordStartsWith(strings.ToLower(words[w]), wholeForeignWords, "-")
 					if index >= 0 {
 						words[w] = string(words[w][:index]) + l2c(string(words[w][index:]))
 					} else if !looksLikeForeignWord(words[w]) {
 						words[w] = l2c(words[w])
 					}
-					// Do not transliterate to latin if the parent element is span that has a lang attribut with the value "sr-Cyrl"
-				} else if *c2lPtr == true {
-					if n.Parent.Data == "span" {
-						skip := false
-						for _, k := range n.Parent.Attr {
-							if (k.Key == "lang" || k.Key == "xml:lang") && k.Val == "sr-Cyrl" {
-								skip = true
-								break
-							}
-						}
-						if skip {
-							continue
-						}
-					}
+				} else { // *c2lPtr
 					words[w] = c2l(words[w])
 				}
 			}
+
 			// Preserve the whitespace at the beginning and at the end of the node data
 			words[0] = nodeprefix + words[0]
 			words[len(words)-1] += nodesuffix
