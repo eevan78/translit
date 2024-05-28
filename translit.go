@@ -968,30 +968,7 @@ func traverseNode(n *html.Node) {
 		}
 	case html.TextNode:
 		// Transliterate if text is not inside a script or a style element
-		if !allWhite(n.Data) && n.Parent.Type == html.ElementNode && (n.Parent.Data != "script" && n.Parent.Data != "style") {
-			var attribute string
-
-			if *l2cPtr {
-				attribute = "sr-Latn"
-			} else { // *c2lPtr
-				attribute = "sr-Cyrl"
-			}
-
-			skipTranslit := false
-			if n.Parent.Data == "span" {
-				for _, k := range n.Parent.Attr {
-					if (k.Key == "lang" || k.Key == "xml:lang") && k.Val == attribute {
-						skipTranslit = true
-						break
-					}
-				}
-
-			}
-
-			if skipTranslit {
-				break // do not transliterate node
-			}
-
+		if !allWhite(n.Data) && n.Parent.Type == html.ElementNode && shouldTransliterate(n) {
 			nodeprefix := whitepref.FindString(n.Data)
 			nodesuffix := whitesuff.FindString(n.Data)
 			words := strings.Fields(n.Data)
@@ -1019,6 +996,39 @@ func traverseNode(n *html.Node) {
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		traverseNode(c)
 	}
+}
+
+// Check whether node should be transliterated. Returns true if node should be transliterated, and false otherwise.
+// Node should not be transliterated if its parent node is script or style.
+// Also, node should not be transliterated if it has a lang attribute with a value of Latin script
+// when transliteration is in Cyrillic script, or if it has a lang attribute with a value of Cyrillic script
+// when transliteration is in Latin script.
+func shouldTransliterate(n *html.Node) bool {
+
+	if n.Parent.Data == "script" || n.Parent.Data == "style" {
+		return false
+	}
+
+	var attr string
+
+	if *l2cPtr {
+		attr = "sr-Latn"
+	} else { // *c2lPtr
+		attr = "sr-Cyrl"
+	}
+
+	shouldTranslit := true
+	if n.Parent.Data == "span" {
+		for _, k := range n.Parent.Attr {
+			if (k.Key == "lang" || k.Key == "xml:lang") && k.Val == attr {
+				shouldTranslit = false
+				break
+			}
+		}
+
+	}
+
+	return shouldTranslit
 }
 
 func transliterateHtml() {
