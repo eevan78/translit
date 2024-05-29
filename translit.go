@@ -998,18 +998,18 @@ func traverseNode(n *html.Node) {
 	}
 }
 
-// Check whether node should be transliterated. Returns true if node should be transliterated, and false otherwise.
-// Node should not be transliterated if its parent node is script or style.
+// Checks whether a text node should be transliterated. Returns true if it should, and false otherwise.
+// A node should not be transliterated if its parent node is script or style.
 // Also, node should not be transliterated if it has a lang attribute with a value of Latin script
-// when transliteration is in Cyrillic script, or if it has a lang attribute with a value of Cyrillic script
-// when transliteration is in Latin script.
+// when transliteration is to the Cyrillic script, or if it has a lang attribute with a value of Cyrillic script
+// when transliteration is to the Latin script.
 func shouldTransliterate(n *html.Node) bool {
 
 	if n.Parent.Data == "script" || n.Parent.Data == "style" {
 		return false
 	}
 
-	var attr string
+	attr := ""
 
 	if *l2cPtr {
 		attr = "sr-Latn"
