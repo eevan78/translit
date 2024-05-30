@@ -112,5 +112,13 @@ go build -compiler gc -ldflags="-w -s" .
 ./translit -c2l -txt <~/Downloads/nabavka.txt >~/Downloads/preslovljeno/nabavka_lat.txt
 ```
 
+## Vim едитор
+
+Овај пример приказује како се Vim едитором пресловљава XHTML фајл:
+
+![Аскикаст који приказује како се Vim едитором пресловљава XHTML](https://github.com/eevan78/translit/assets/27575106/44535446-3f0a-4832-9e4a-53fc896d298a)
+
+
 # Лиценца
 Ово је софтвер отвореног кода, који се слободно може користити у оквиру [MIT лиценце.](https://github.com/eevan78/translit/blob/main/LICENSE.md)
+
