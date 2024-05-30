@@ -42,6 +42,7 @@ var (
 	textPtr       = flag.Bool("text", false, "`Формат` улаза је прости текст")
 	inputFilePtr  = flag.String("i", "", "Путања улазног фајла")
 	outputFilePtr = flag.String("o", "", "Путања излазног фајла")
+	inputDirPtr   = flag.String("id", "", "Путања улазног директоријума")
 
 	tbl = trie.BuildFromMap(map[string]string{
 		"A":   "А",
@@ -918,7 +919,7 @@ func Pomoc() {
 	fmt.Fprintf(flag.CommandLine.Output(), "Ово је филтер %s верзија %s\nСаставио eevan78, 2024\n\n", os.Args[0], version)
 	fmt.Fprintf(flag.CommandLine.Output(), "Филтер чита UTF-8 кодирани текст са стандардног улаза или из наведеног фајла и исписује га на\nстандардни излаз или наведени фајл, пресловљен сагласно са следећим заставицама:\n")
 	flag.PrintDefaults()
-	fmt.Fprintf(flag.CommandLine.Output(), "\nМора да се наведе по једна и само једна заставица из обе групе Смер и Формат.\nЗаставице за путању улазног и излазног фајла нису у обавезне\nЦеле речи између „<|” и „|>” у простом тексту се не пресловљавају у ћирилицу.\nТекст унутар <span lang=\"sr-Latn\"></span> елемента у (X)HTML се не пресловљава у\nћирилицу, а текст унутар <span lang=\"sr-Cyrl\"></span> се не пресловљава у латиницу.\n\nПримери:\n%s -l2c -html\t\tпреслови (X)HTML у ћирилицу\n%s -text -c2l\t\tпреслови прости текст у латиницу\n", os.Args[0], os.Args[0])
+	fmt.Fprintf(flag.CommandLine.Output(), "\nМора да се наведе по једна и само једна заставица из обе групе Смер и Формат.\nЗаставице за путању улазног и излазног фајла, као и излазног директоријума нису у обавезне.\nЦеле речи између „<|” и „|>” у простом тексту се не пресловљавају у ћирилицу.\nТекст унутар <span lang=\"sr-Latn\"></span> елемента у (X)HTML се не пресловљава у\nћирилицу, а текст унутар <span lang=\"sr-Cyrl\"></span> се не пресловљава у латиницу.\n\nПримери:\n%s -l2c -html\t\tпреслови (X)HTML у ћирилицу\n%s -text -c2l\t\tпреслови прости текст у латиницу\n", os.Args[0], os.Args[0])
 }
 
 func allWhite(s string) bool {
@@ -1095,7 +1096,6 @@ func openInputFile() {
 	var inputFile *os.File
 	var err error
 	var url string
-
 	if strings.HasPrefix(*inputFilePtr, "http") {
 		var response *grab.Response
 		response, err = grab.Get(".", *inputFilePtr)
@@ -1115,6 +1115,9 @@ func openInputFile() {
 	rdr = bufio.NewReader(inputFile)
 }
 
+func openInputDirectory() {
+
+}
 func openOutputFile() {
 	outputFile, err := os.Create(*outputFilePtr)
 	if err != nil {
@@ -1127,9 +1130,13 @@ func openOutputFile() {
 func processFlags() {
 	flag.Usage = Pomoc
 	flag.Parse()
-	if *l2cPtr == *c2lPtr || *htmlPtr == *textPtr {
+	if *l2cPtr == *c2lPtr || *htmlPtr == *textPtr || (*inputFilePtr != "" && *inputDirPtr != "") {
 		Pomoc()
 		os.Exit(0)
+	}
+
+	if *inputDirPtr != "" {
+		openInputDirectory()
 	}
 
 	if *inputFilePtr != "" {
