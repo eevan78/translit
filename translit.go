@@ -16,6 +16,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/cavaliergopher/grab/v3"
 	"github.com/porfirion/trie"
 	"golang.org/x/net/html"
 )
@@ -1091,25 +1092,36 @@ func exitWithError(err error) {
 }
 
 func openInputFile() {
+	var inputFile *os.File
+	var err error
+	var url string
 
-	inputFile, err := os.Open(*inputFilePtr)
+	if strings.HasPrefix(*inputFilePtr, "http") {
+		var response *grab.Response
+		response, err = grab.Get(".", *inputFilePtr)
+		if err != nil {
+			exitWithError(err)
+		}
+		url = response.Filename
+	} else {
+		url = *inputFilePtr
+	}
+
+	inputFile, err = os.Open(url)
 	if err != nil {
 		panic(err)
 	}
 
 	rdr = bufio.NewReader(inputFile)
-
 }
 
 func openOutputFile() {
-
 	outputFile, err := os.Create(*outputFilePtr)
 	if err != nil {
 		panic(err)
 	}
 
 	out = bufio.NewWriter(outputFile)
-
 }
 
 func processFlags() {

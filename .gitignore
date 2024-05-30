@@ -24,8 +24,8 @@ go.work
 # Goreleaser Dist directory
 dist/
 
-#VSCode debug directory
+# VSCode debug directory
 .vscode/
 
-# Asciicast
-*.gif
+# kdiff3 file  
+*.orig
