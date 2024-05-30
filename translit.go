@@ -7,10 +7,12 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"unicode"
@@ -33,8 +35,12 @@ var (
 	doit    = true
 	version = "v0.3.0"
 
-	rdr = bufio.NewReader(os.Stdin)
-	out = bufio.NewWriter(os.Stdout)
+	rdr             = bufio.NewReader(os.Stdin)
+	out             = bufio.NewWriter(os.Stdout)
+	inputFilenames  []string
+	inputFilePaths  []string
+	outputFilePaths []string
+	outputDir       = "output"
 
 	l2cPtr        = flag.Bool("l2c", false, "`Смер` пресловљавања је латиница у ћирилицу")
 	c2lPtr        = flag.Bool("c2l", false, "`Смер` пресловљавања је ћирилица у латиницу")
@@ -1033,7 +1039,7 @@ func shouldTransliterate(n *html.Node) bool {
 	return shouldTranslit
 }
 
-func transliterateHtml() {
+func transliterateHtmlFile() {
 	doc, err := html.Parse(rdr)
 	if err != nil {
 		exitWithError(err)
@@ -1045,7 +1051,7 @@ func transliterateHtml() {
 	_ = out.Flush()
 }
 
-func transliterateText() {
+func transliterateTextFile() {
 	for {
 		switch line, err := rdr.ReadString('\n'); err {
 		case nil:
@@ -1092,10 +1098,81 @@ func exitWithError(err error) {
 	os.Exit(1)
 }
 
-func openInputFile() {
-	var inputFile *os.File
+func transliterateHtml() {
+	for i := range inputFilenames {
+		openInputFile(inputFilePaths[i])
+		openOutputFile(outputFilePaths[i])
+		transliterateHtmlFile()
+	}
+}
+
+func transliterateText() {
+	for i := range inputFilenames {
+		openInputFile(inputFilePaths[i])
+		openOutputFile(outputFilePaths[i])
+		transliterateTextFile()
+	}
+}
+
+func openInputFile(filename string) {
+	inputFile, err := os.Open(filename)
+	if err != nil {
+		panic(err)
+	}
+
+	rdr = bufio.NewReader(inputFile)
+}
+
+func prepareInputDirectory() {
+	isDirectory, errors := isDirectory(*inputDirPtr)
+	if errors != nil {
+		panic(errors)
+	}
+
+	if isDirectory {
+		inputDir, err := os.Open(*inputDirPtr)
+		if err != nil {
+			panic(err)
+		}
+
+		var error error
+
+		inputFilenames, error = inputDir.Readdirnames(0)
+		if error != nil {
+			panic(error)
+		}
+
+		absPath, _ := filepath.Abs(*inputDirPtr)
+		for i := range inputFilenames {
+			inputFilePaths = append(inputFilePaths, filepath.Join(absPath, inputFilenames[i]))
+		}
+
+		fmt.Println("Улазни фајлови:")
+		fmt.Println(inputFilePaths)
+	}
+}
+
+func prepareOutputDirectory() {
+	if _, err := os.Stat(outputDir); errors.Is(err, os.ErrNotExist) {
+		err := os.Mkdir(outputDir, os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	absPath, _ := filepath.Abs(outputDir)
+	for i := range inputFilenames {
+		outputFilePaths = append(outputFilePaths, filepath.Join(absPath, inputFilenames[i]))
+	}
+
+	fmt.Println("Излазни фајлови:")
+	fmt.Println(outputFilePaths)
+}
+
+func prepareInputFile() {
 	var err error
 	var url string
+
 	if strings.HasPrefix(*inputFilePtr, "http") {
 		var response *grab.Response
 		response, err = grab.Get(".", *inputFilePtr)
@@ -1107,19 +1184,14 @@ func openInputFile() {
 		url = *inputFilePtr
 	}
 
-	inputFile, err = os.Open(url)
-	if err != nil {
-		panic(err)
-	}
-
-	rdr = bufio.NewReader(inputFile)
+	inputFilenames = append(inputFilenames, url)
+	inputFilePaths = append(inputFilePaths, url)
+	fmt.Println("Улазни фајл:")
+	fmt.Println(inputFilePaths)
 }
 
-func openInputDirectory() {
-
-}
-func openOutputFile() {
-	outputFile, err := os.Create(*outputFilePtr)
+func openOutputFile(filename string) {
+	outputFile, err := os.Create(filename)
 	if err != nil {
 		panic(err)
 	}
@@ -1127,24 +1199,35 @@ func openOutputFile() {
 	out = bufio.NewWriter(outputFile)
 }
 
+func isDirectory(path string) (bool, error) {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return false, err
+	}
+
+	return fileInfo.IsDir(), err
+}
+
 func processFlags() {
 	flag.Usage = Pomoc
 	flag.Parse()
-	if *l2cPtr == *c2lPtr || *htmlPtr == *textPtr || (*inputFilePtr != "" && *inputDirPtr != "") {
+	if *l2cPtr == *c2lPtr || *htmlPtr == *textPtr || (*inputDirPtr != "" && (*inputFilePtr != "" || *outputFilePtr != "")) {
 		Pomoc()
 		os.Exit(0)
 	}
 
 	if *inputDirPtr != "" {
-		openInputDirectory()
+		prepareInputDirectory()
+		prepareOutputDirectory()
 	}
 
 	if *inputFilePtr != "" {
-		openInputFile()
+		prepareInputFile()
+		prepareOutputDirectory()
 	}
 
 	if *outputFilePtr != "" {
-		openOutputFile()
+		openOutputFile(*outputFilePtr)
 	}
 }
 
