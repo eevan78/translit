@@ -5,6 +5,7 @@ Line filter that transliterate between the two Serbian scripts.
 
 Преузима текст са стандардног улаза, пресловљава га и шаље на стандардни излаз.
 
+Као инспирација је послужио програм [Вучко](https://www.jezik.org/srpski2004/uputstva/dodatni/vucko.html) Александра Веселиновића.
 Доста тога је преузето из одличног алата [Ћирилизатор](https://github.com/turanjanin/cirilizator) Јована Турањанина.
 
 # Како ради
