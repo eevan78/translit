@@ -1172,6 +1172,11 @@ func prepareInputFile() {
 	var url string
 
 	if strings.HasPrefix(*inputPathPtr, "http") {
+		if strings.HasSuffix(*inputPathPtr, "/") {
+			err = errors.New("Тренутно није дозвољено да се URL завршава са /")
+			exitWithError(err)
+		}
+
 		var response *grab.Response
 		response, err = grab.Get(".", *inputPathPtr)
 		if err != nil {
