@@ -42,13 +42,11 @@ var (
 	outputFilePaths []string
 	outputDir       = "output"
 
-	l2cPtr        = flag.Bool("l2c", false, "`Смер` пресловљавања је латиница у ћирилицу")
-	c2lPtr        = flag.Bool("c2l", false, "`Смер` пресловљавања је ћирилица у латиницу")
-	htmlPtr       = flag.Bool("html", false, "`Формат` улаза је (X)HTML")
-	textPtr       = flag.Bool("text", false, "`Формат` улаза је прости текст")
-	inputFilePtr  = flag.String("i", "", "Путања улазног фајла")
-	outputFilePtr = flag.String("o", "", "Путања излазног фајла")
-	inputDirPtr   = flag.String("id", "", "Путања улазног директоријума")
+	l2cPtr       = flag.Bool("l2c", false, "`Смер` пресловљавања је латиница у ћирилицу")
+	c2lPtr       = flag.Bool("c2l", false, "`Смер` пресловљавања је ћирилица у латиницу")
+	htmlPtr      = flag.Bool("html", false, "`Формат` улаза је (X)HTML")
+	textPtr      = flag.Bool("text", false, "`Формат` улаза је прости текст")
+	inputPathPtr = flag.String("i", "", "Путања улазног фајла или директоријума")
 
 	tbl = trie.BuildFromMap(map[string]string{
 		"A":   "А",
@@ -1101,7 +1099,7 @@ func exitWithError(err error) {
 func transliterateHtml() {
 	for i := range inputFilenames {
 		openInputFile(inputFilePaths[i])
-		openOutputFile(outputFilePaths[i])
+		createOutputFile(outputFilePaths[i])
 		transliterateHtmlFile()
 	}
 }
@@ -1109,7 +1107,7 @@ func transliterateHtml() {
 func transliterateText() {
 	for i := range inputFilenames {
 		openInputFile(inputFilePaths[i])
-		openOutputFile(outputFilePaths[i])
+		createOutputFile(outputFilePaths[i])
 		transliterateTextFile()
 	}
 }
@@ -1124,13 +1122,13 @@ func openInputFile(filename string) {
 }
 
 func prepareInputDirectory() {
-	isDirectory, errors := isDirectory(*inputDirPtr)
+	isDirectory, errors := isDirectory(*inputPathPtr)
 	if errors != nil {
 		panic(errors)
 	}
 
 	if isDirectory {
-		inputDir, err := os.Open(*inputDirPtr)
+		inputDir, err := os.Open(*inputPathPtr)
 		if err != nil {
 			panic(err)
 		}
@@ -1142,7 +1140,7 @@ func prepareInputDirectory() {
 			panic(error)
 		}
 
-		absPath, _ := filepath.Abs(*inputDirPtr)
+		absPath, _ := filepath.Abs(*inputPathPtr)
 		for i := range inputFilenames {
 			inputFilePaths = append(inputFilePaths, filepath.Join(absPath, inputFilenames[i]))
 		}
@@ -1173,15 +1171,15 @@ func prepareInputFile() {
 	var err error
 	var url string
 
-	if strings.HasPrefix(*inputFilePtr, "http") {
+	if strings.HasPrefix(*inputPathPtr, "http") {
 		var response *grab.Response
-		response, err = grab.Get(".", *inputFilePtr)
+		response, err = grab.Get(".", *inputPathPtr)
 		if err != nil {
 			exitWithError(err)
 		}
 		url = response.Filename
 	} else {
-		url = *inputFilePtr
+		url = *inputPathPtr
 	}
 
 	inputFilenames = append(inputFilenames, url)
@@ -1190,7 +1188,7 @@ func prepareInputFile() {
 	fmt.Println(inputFilePaths)
 }
 
-func openOutputFile(filename string) {
+func createOutputFile(filename string) {
 	outputFile, err := os.Create(filename)
 	if err != nil {
 		panic(err)
@@ -1200,6 +1198,10 @@ func openOutputFile(filename string) {
 }
 
 func isDirectory(path string) (bool, error) {
+	if strings.HasPrefix(path, "http") {
+		return false, nil
+	}
+
 	fileInfo, err := os.Stat(path)
 	if err != nil {
 		return false, err
@@ -1211,23 +1213,23 @@ func isDirectory(path string) (bool, error) {
 func processFlags() {
 	flag.Usage = Pomoc
 	flag.Parse()
-	if *l2cPtr == *c2lPtr || *htmlPtr == *textPtr || (*inputDirPtr != "" && (*inputFilePtr != "" || *outputFilePtr != "")) {
+	if *l2cPtr == *c2lPtr || *htmlPtr == *textPtr {
 		Pomoc()
 		os.Exit(0)
 	}
 
-	if *inputDirPtr != "" {
-		prepareInputDirectory()
-		prepareOutputDirectory()
-	}
+	if *inputPathPtr != "" {
+		isDirectory, errors := isDirectory(*inputPathPtr)
+		if errors != nil {
+			panic(errors)
+		}
 
-	if *inputFilePtr != "" {
-		prepareInputFile()
+		if isDirectory {
+			prepareInputDirectory()
+		} else {
+			prepareInputFile()
+		}
 		prepareOutputDirectory()
-	}
-
-	if *outputFilePtr != "" {
-		openOutputFile(*outputFilePtr)
 	}
 }
 
