@@ -1050,6 +1050,8 @@ func transliterateHtmlFile() {
 }
 
 func transliterateTextFile() {
+
+loop:
 	for {
 		switch line, err := rdr.ReadString('\n'); err {
 		case nil:
@@ -1083,7 +1085,7 @@ func transliterateTextFile() {
 			_ = out.Flush()
 
 		case io.EOF:
-			os.Exit(0)
+			break loop
 
 		default:
 			exitWithError(err)
