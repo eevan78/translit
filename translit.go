@@ -1171,7 +1171,7 @@ func prepareOutputDirectory() {
 
 func prepareInputFile() {
 	var err error
-	var url string
+	var fileName string
 
 	if strings.HasPrefix(*inputPathPtr, "http") {
 		if strings.HasSuffix(*inputPathPtr, "/") {
@@ -1180,17 +1180,22 @@ func prepareInputFile() {
 		}
 
 		var response *grab.Response
-		response, err = grab.Get(".", *inputPathPtr)
+		//download file to the tmp directory
+		response, err = grab.Get("tmp/", *inputPathPtr)
 		if err != nil {
 			exitWithError(err)
 		}
-		url = response.Filename
-	} else {
-		url = *inputPathPtr
+		*inputPathPtr = response.Filename
 	}
 
-	inputFilenames = append(inputFilenames, url)
-	inputFilePaths = append(inputFilePaths, url)
+	// strip directories from the input filepath if exist
+	lastIndex := strings.LastIndex(*inputPathPtr, "/")
+	fileName = (*inputPathPtr)[lastIndex+1:]
+
+	inputFilenames = append(inputFilenames, fileName)
+	absPath, _ := filepath.Abs(*inputPathPtr)
+	inputFilePaths = append(inputFilePaths, absPath)
+
 	fmt.Println("Улазни фајл:")
 	fmt.Println(inputFilePaths)
 }
@@ -1209,7 +1214,9 @@ func isDirectory(path string) (bool, error) {
 		return false, nil
 	}
 
-	fileInfo, err := os.Stat(path)
+	absPath, _ := filepath.Abs(path)
+
+	fileInfo, err := os.Stat(absPath)
 	if err != nil {
 		return false, err
 	}
