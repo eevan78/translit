@@ -8,14 +8,16 @@ import (
 	"os/exec"
 	"path/filepath"
 	"testing"
+
+	"github.com/eevan78/translit/internal/dictionary"
 )
 
 func TestL2CHtmlInputFileFromInternet(t *testing.T) {
-	*l2cPtr = true
-	*c2lPtr = false
-	*htmlPtr = true
-	*textPtr = false
-	*inputPathPtr = "https://www.k1info.rs/kultura-i-umetnost/knjige/33243/bestseler-debitantski-roman-melisa-da-kosta/vest"
+	*dictionary.L2cPtr = true
+	*dictionary.C2lPtr = false
+	*dictionary.HtmlPtr = true
+	*dictionary.TextPtr = false
+	*dictionary.InputPathPtr = "https://www.k1info.rs/kultura-i-umetnost/knjige/33243/bestseler-debitantski-roman-melisa-da-kosta/vest"
 	flag.Parse()
 
 	main()
@@ -28,11 +30,11 @@ func TestL2CHtmlInputFileFromInternet(t *testing.T) {
 }
 
 func TestL2CHtmlInputFileFromInternetWithTrailingSlash(t *testing.T) {
-	*l2cPtr = true
-	*c2lPtr = false
-	*htmlPtr = true
-	*textPtr = false
-	*inputPathPtr = "https://zadovoljna.nova.rs/fitnes-i-ishrana/francuski-tost-przenice-iz-rerne/"
+	*dictionary.L2cPtr = true
+	*dictionary.C2lPtr = false
+	*dictionary.HtmlPtr = true
+	*dictionary.TextPtr = false
+	*dictionary.InputPathPtr = "https://zadovoljna.nova.rs/fitnes-i-ishrana/francuski-tost-przenice-iz-rerne/"
 	flag.Parse()
 
 	if os.Getenv("DO_TEST") == "1" {
@@ -55,11 +57,11 @@ func TestL2CHtmlInputFileFromInternetWithTrailingSlash(t *testing.T) {
 }
 
 func TestL2CTextInputFile(t *testing.T) {
-	*l2cPtr = true
-	*c2lPtr = false
-	*htmlPtr = false
-	*textPtr = true
-	*inputPathPtr = "test/rec_godine.txt"
+	*dictionary.L2cPtr = true
+	*dictionary.C2lPtr = false
+	*dictionary.HtmlPtr = false
+	*dictionary.TextPtr = true
+	*dictionary.InputPathPtr = "../../test/testdata/rec_godine.txt"
 	flag.Parse()
 
 	main()
@@ -73,15 +75,15 @@ func TestL2CTextInputFile(t *testing.T) {
 }
 
 func clearData() {
-	inputFilenames = nil
-	inputFilePaths = nil
-	outputFilePaths = nil
+	dictionary.InputFilenames = nil
+	dictionary.InputFilePaths = nil
+	dictionary.OutputFilePaths = nil
 }
 
 func getOutputFileName() string {
 
-	absDirectoryPath, _ := filepath.Abs(outputDir)
-	absFilenamePath := filepath.Join(absDirectoryPath, filepath.Base(*inputPathPtr))
+	absDirectoryPath, _ := filepath.Abs(dictionary.OutputDir)
+	absFilenamePath := filepath.Join(absDirectoryPath, filepath.Base(*dictionary.InputPathPtr))
 
 	return absFilenamePath
 }

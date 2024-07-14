@@ -7,7 +7,7 @@
 *.dll
 *.so
 *.dylib
-translit
+/translit
 
 # Test binary, built with `go test -c`
 *.test
@@ -29,3 +29,7 @@ dist/
 
 # kdiff3 file  
 *.orig
+
+# internal tmp and output directories
+tmp/
+output/
