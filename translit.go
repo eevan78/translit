@@ -1160,7 +1160,7 @@ func prepareOutputDirectory() {
 
 	absPath, _ := filepath.Abs(outputDir)
 	for i := range inputFilenames {
-		outputFilePaths = append(outputFilePaths, filepath.Join(absPath, inputFilenames[i]))
+		outputFilePaths = append(outputFilePaths, filepath.Join(absPath, filepath.Base(inputFilenames[i])))
 	}
 
 	fmt.Println("Излазни фајлови:")
