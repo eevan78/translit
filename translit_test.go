@@ -22,7 +22,7 @@ func TestL2CHtmlInputFileFromInternet(t *testing.T) {
 	main()
 
 	exist := isOutputFileExist()
-
+	clearData()
 	if !exist {
 		t.Fatalf(`Translit nije napravio fajl %q`, getOutputFileName())
 	}
@@ -45,10 +45,12 @@ func TestL2CHtmlInputFileFromInternetWithTrailingSlash(t *testing.T) {
 	cmd.Env = append(os.Environ(), "DO_TEST=1")
 	err := cmd.Run()
 	if e, ok := err.(*exec.ExitError); ok && !e.Success() {
-		//Program exists with code 1 and prints expected message: Тренутно није дозвољено да се URL завршава са /
+		//Program exits with code 1 and prints expected message: Тренутно није дозвољено да се URL завршава са /
+		clearData()
 		return
 	}
 
+	clearData()
 	t.Fatalf("Процес је бацио грешку %v, а требало је да статус изласка из пробрама буде 1", err)
 
 }
@@ -64,10 +66,17 @@ func TestL2CTextInputFile(t *testing.T) {
 	main()
 
 	exist := isOutputFileExist()
+	clearData()
 
 	if !exist {
 		t.Fatalf(`Translit nije napravio fajl %q`, getOutputFileName())
 	}
+}
+
+func clearData() {
+	inputFilenames = nil
+	inputFilePaths = nil
+	outputFilePaths = nil
 }
 
 func getOutputFileName() string {
