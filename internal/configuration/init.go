@@ -1,48 +1,67 @@
 package configuration
 
 import (
+	"flag"
 	"fmt"
 
 	"github.com/eevan78/translit/internal/dictionary"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
+var configuration Configurations
+
 func ConfigInit() {
-	// Set the file name of the configurations file
+	readConfig()
+	initVars()
+	inifFlags()
+}
+
+func readConfig() {
 	viper.SetConfigName("config")
-
-	// Set the path to look for the configurations file
 	viper.AddConfigPath("../../configs/")
-
-	// Enable VIPER to read Environment Variables
-	viper.AutomaticEnv()
-
 	viper.SetConfigType("yaml")
-
-	var configuration Configurations
+	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
 		fmt.Printf("Грешка при читању конфигурационог фајла, %s", err)
 	}
 
-	// Set undefined variables
-	viper.SetDefault("outputDir", "../../output")
-	viper.SetDefault("version", "v0.3.0")
-
 	err := viper.Unmarshal(&configuration)
 	if err != nil {
 		fmt.Printf("Грешка при раду са конфигурационим фајлом, %v", err)
 	}
+}
 
-	// Reading variables using the model
-	fmt.Println("Reading variables using the model..")
-	fmt.Println("Output directory is\t", configuration.OutputDir)
-
-	// Reading variables without using the model
-	fmt.Println("\nReading variables without using the model..")
-	fmt.Println("Version is\t", viper.GetString("Version"))
-	fmt.Println("OutputDir is\t", viper.GetString("OutputDir"))
+func initVars() {
+	defaultVars()
 
 	dictionary.OutputDir = viper.GetString("OutputDir")
 	dictionary.Version = viper.GetString("Version")
+}
+
+func defaultVars() {
+	viper.SetDefault("outputDir", "../../output")
+	viper.SetDefault("version", "v0.3.0")
+}
+
+func inifFlags() {
+	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
+	viper.BindPFlags(pflag.CommandLine)
+
+	defaultFlags()
+
+	*dictionary.C2lPtr = configuration.C2lPtr
+	*dictionary.L2cPtr = configuration.L2cPtr
+	*dictionary.HtmlPtr = configuration.HtmlPtr
+	*dictionary.TextPtr = configuration.TextPtr
+	*dictionary.InputPathPtr = configuration.InputPathPtr
+}
+
+func defaultFlags() {
+	configuration.C2lPtr = true
+	configuration.L2cPtr = false
+	configuration.HtmlPtr = false
+	configuration.TextPtr = true
+	configuration.InputPathPtr = ""
 }

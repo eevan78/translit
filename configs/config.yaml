@@ -1,2 +1,9 @@
+#vars
 version: "v0.3.0"
 outputDir: "../../output"
+#flags
+C2lPtr: true
+L2CPtr: false
+HtmlPtr: false
+TextPtr: true
+InputPathPtr: ""
