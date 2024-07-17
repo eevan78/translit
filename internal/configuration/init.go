@@ -22,15 +22,16 @@ func ConfigInit() {
 	var configuration Configurations
 
 	if err := viper.ReadInConfig(); err != nil {
-		fmt.Printf("Error reading config file, %s", err)
+		fmt.Printf("Грешка при читању конфигурационог фајла, %s", err)
 	}
 
 	// Set undefined variables
 	viper.SetDefault("outputDir", "../../output")
+	viper.SetDefault("version", "v0.3.0")
 
 	err := viper.Unmarshal(&configuration)
 	if err != nil {
-		fmt.Printf("Unable to decode into struct, %v", err)
+		fmt.Printf("Грешка при раду са конфигурационим фајлом, %v", err)
 	}
 
 	// Reading variables using the model
@@ -39,7 +40,9 @@ func ConfigInit() {
 
 	// Reading variables without using the model
 	fmt.Println("\nReading variables without using the model..")
-	fmt.Println("Database is\t", viper.GetString("OutputDir"))
+	fmt.Println("Version is\t", viper.GetString("Version"))
+	fmt.Println("OutputDir is\t", viper.GetString("OutputDir"))
 
 	dictionary.OutputDir = viper.GetString("OutputDir")
+	dictionary.Version = viper.GetString("Version")
 }
