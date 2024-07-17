@@ -1,7 +1,8 @@
 package configuration
 
 type Configurations struct {
-	OutputDir string //= "../../output"
+	Version   string
+	OutputDir string
 }
 
 // SomeConfigurations exported
