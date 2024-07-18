@@ -1179,9 +1179,18 @@ func prepareInputFile() {
 			exitWithError(err)
 		}
 
+		tmpDir := "tmp"
+
+		if _, err := os.Stat(tmpDir); errors.Is(err, os.ErrNotExist) {
+			err := os.Mkdir(tmpDir, os.ModePerm)
+			if err != nil {
+				panic(err)
+			}
+		}
+
 		var response *grab.Response
 		//download file to the tmp directory
-		response, err = grab.Get("tmp/", *inputPathPtr)
+		response, err = grab.Get(tmpDir, *inputPathPtr)
 		if err != nil {
 			exitWithError(err)
 		}
