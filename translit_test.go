@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"testing"
 )
 
@@ -81,11 +80,8 @@ func clearData() {
 
 func getOutputFileName() string {
 
-	lastIndex := strings.LastIndex(*inputPathPtr, "/")
-	fileName := (*inputPathPtr)[lastIndex+1:]
-
 	absDirectoryPath, _ := filepath.Abs(outputDir)
-	absFilenamePath := filepath.Join(absDirectoryPath, fileName)
+	absFilenamePath := filepath.Join(absDirectoryPath, filepath.Base(*inputPathPtr))
 
 	return absFilenamePath
 }
