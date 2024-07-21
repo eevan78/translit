@@ -6,12 +6,15 @@
 package main
 
 import (
+	"github.com/eevan78/translit/internal/configuration"
 	"github.com/eevan78/translit/internal/dictionary"
 	"github.com/eevan78/translit/internal/language"
 	"github.com/eevan78/translit/internal/terminal"
 )
 
 func main() {
+
+	configuration.ConfigInit()
 
 	terminal.ProcessFlags()
 

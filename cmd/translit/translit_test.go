@@ -52,7 +52,7 @@ func TestL2CHtmlInputFileFromInternetWithTrailingSlash(t *testing.T) {
 	}
 
 	clearData()
-	t.Fatalf("Процес је бацио грешку %v, а требало је да статус изласка из пробрама буде 1", err)
+	t.Fatalf("Процес је бацио грешку %v, а требало је да статус изласка из програма буде 1", err)
 
 }
 
