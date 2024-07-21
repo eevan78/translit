@@ -27,7 +27,7 @@ var (
 	InputFilenames  []string
 	InputFilePaths  []string
 	OutputFilePaths []string
-	OutputDir       = "../../output"
+	OutputDir       = "output"
 
 	L2cPtr       = flag.Bool("l2c", false, "`Смер` пресловљавања је латиница у ћирилицу")
 	C2lPtr       = flag.Bool("c2l", false, "`Смер` пресловљавања је ћирилица у латиницу")

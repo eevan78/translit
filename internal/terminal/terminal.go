@@ -60,14 +60,15 @@ func prepareInputDirectory() {
 }
 
 func prepareOutputDirectory() {
-	if _, err := os.Stat(dictionary.OutputDir); errors.Is(err, os.ErrNotExist) {
-		err := os.Mkdir(dictionary.OutputDir, os.ModePerm)
+	outDirName := filepath.Join(filepath.Dir(*dictionary.InputPathPtr), dictionary.OutputDir)
+	if _, err := os.Stat(outDirName); errors.Is(err, os.ErrNotExist) {
+		err := os.Mkdir(outDirName, os.ModePerm)
 		if err != nil {
 			panic(err)
 		}
 	}
 
-	absPath, _ := filepath.Abs(dictionary.OutputDir)
+	absPath, _ := filepath.Abs(outDirName)
 	for i := range dictionary.InputFilenames {
 		dictionary.OutputFilePaths = append(dictionary.OutputFilePaths, filepath.Join(absPath, dictionary.InputFilenames[i]))
 	}
@@ -78,7 +79,6 @@ func prepareOutputDirectory() {
 
 func prepareInputFile() {
 	var err error
-	var fileName string
 
 	if strings.HasPrefix(*dictionary.InputPathPtr, "http") {
 		if strings.HasSuffix(*dictionary.InputPathPtr, "/") {
@@ -105,10 +105,8 @@ func prepareInputFile() {
 	}
 
 	// strip directories from the input filepath if exist
-	lastIndex := strings.LastIndex(*dictionary.InputPathPtr, "/")
-	fileName = (*dictionary.InputPathPtr)[lastIndex+1:]
 
-	dictionary.InputFilenames = append(dictionary.InputFilenames, fileName)
+	dictionary.InputFilenames = append(dictionary.InputFilenames, filepath.Base(*dictionary.InputPathPtr))
 	absPath, _ := filepath.Abs(*dictionary.InputPathPtr)
 	dictionary.InputFilePaths = append(dictionary.InputFilePaths, absPath)
 

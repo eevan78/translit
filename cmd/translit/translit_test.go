@@ -81,8 +81,8 @@ func clearData() {
 }
 
 func getOutputFileName() string {
-
-	absDirectoryPath, _ := filepath.Abs(dictionary.OutputDir)
+	outDirPath := filepath.Join(filepath.Dir(*dictionary.InputPathPtr), dictionary.OutputDir)
+	absDirectoryPath, _ := filepath.Abs(outDirPath)
 	absFilenamePath := filepath.Join(absDirectoryPath, filepath.Base(*dictionary.InputPathPtr))
 
 	return absFilenamePath
