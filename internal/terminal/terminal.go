@@ -138,8 +138,36 @@ func isDirectory(path string) (bool, error) {
 	return fileInfo.IsDir(), err
 }
 
+func arrayContainsSubstring(array []string, value string) bool {
+	for _, element := range array {
+		if strings.Contains(element, value) {
+			return true
+		}
+	}
+	return false
+}
+
+// Reset opposite flag for the one added as a command line argument.
+func resetOppositeFlags() {
+	arguments := os.Args[1:]
+
+	if arrayContainsSubstring(arguments, "l2c") {
+		*dictionary.C2lPtr = false
+	}
+	if arrayContainsSubstring(arguments, "c2l") {
+		*dictionary.L2cPtr = false
+	}
+	if arrayContainsSubstring(arguments, "html") {
+		*dictionary.TextPtr = false
+	}
+	if arrayContainsSubstring(arguments, "text") {
+		*dictionary.HtmlPtr = false
+	}
+}
+
 func ProcessFlags() {
 	flag.Usage = Pomoc
+	resetOppositeFlags()
 	flag.Parse()
 	if *dictionary.L2cPtr == *dictionary.C2lPtr || *dictionary.HtmlPtr == *dictionary.TextPtr {
 		Pomoc()
