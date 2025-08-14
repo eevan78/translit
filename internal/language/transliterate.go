@@ -219,7 +219,7 @@ func traverseNode(n *html.Node) {
 					}
 				}
 				if notexist {
-					n.Attr = append(n.Attr, html.Attribute{namespace, "lang", "sr-Cyrl-t-sr-Latn"})
+					n.Attr = append(n.Attr, html.Attribute{Namespace: namespace, Key: "lang", Val: "sr-Cyrl-t-sr-Latn"})
 				}
 			} else if *dictionary.C2lPtr {
 				for i, attrib := range n.Attr {
@@ -232,7 +232,7 @@ func traverseNode(n *html.Node) {
 					}
 				}
 				if notexist {
-					n.Attr = append(n.Attr, html.Attribute{namespace, "lang", "sr-Latn-t-sr-Cyrl"})
+					n.Attr = append(n.Attr, html.Attribute{Namespace: namespace, Key: "lang", Val: "sr-Latn-t-sr-Cyrl"})
 				}
 			}
 		}
