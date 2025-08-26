@@ -358,6 +358,9 @@ loop:
 }
 
 func TransliterateHtml() {
+	if *dictionary.InputPathPtr == "" {
+		transliterateHtmlFile()
+	}
 	for i := range dictionary.InputFilenames {
 		terminal.OpenInputFile(dictionary.InputFilePaths[i])
 		terminal.CreateOutputFile(dictionary.OutputFilePaths[i])
@@ -366,6 +369,9 @@ func TransliterateHtml() {
 }
 
 func TransliterateText() {
+	if *dictionary.InputPathPtr == "" {
+		transliterateTextFile()
+	}
 	for i := range dictionary.InputFilenames {
 		terminal.OpenInputFile(dictionary.InputFilePaths[i])
 		terminal.CreateOutputFile(dictionary.OutputFilePaths[i])

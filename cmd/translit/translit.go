@@ -13,10 +13,9 @@ import (
 )
 
 func main() {
+	terminal.ProcessFlags()
 
 	configuration.ConfigInit()
-
-	terminal.ProcessFlags()
 
 	if *dictionary.HtmlPtr {
 		language.TransliterateHtml()

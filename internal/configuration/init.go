@@ -12,9 +12,11 @@ import (
 var configuration Configurations
 
 func ConfigInit() {
-	readConfig()
-	initVars()
-	inifFlags()
+	if *dictionary.ConfigPtr == true {
+		readConfig()
+		initVars()
+		inifFlags()
+	}
 }
 
 func readConfig() {
@@ -48,9 +50,7 @@ func defaultVars() {
 func inifFlags() {
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	viper.BindPFlags(pflag.CommandLine)
-
 	defaultFlags()
-
 	*dictionary.C2lPtr = configuration.C2lPtr
 	*dictionary.L2cPtr = configuration.L2cPtr
 	*dictionary.HtmlPtr = configuration.HtmlPtr
@@ -59,8 +59,8 @@ func inifFlags() {
 }
 
 func defaultFlags() {
-	configuration.C2lPtr = true
-	configuration.L2cPtr = false
+	configuration.C2lPtr = false
+	configuration.L2cPtr = true
 	configuration.HtmlPtr = false
 	configuration.TextPtr = true
 	configuration.InputPathPtr = ""
