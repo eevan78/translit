@@ -33,6 +33,7 @@ var (
 	C2lPtr       = flag.Bool("c2l", false, "`Смер` пресловљавања је ћирилица у латиницу")
 	HtmlPtr      = flag.Bool("html", false, "`Формат` улаза је (X)HTML")
 	TextPtr      = flag.Bool("text", false, "`Формат` улаза је прости текст")
+	ConfigPtr    = flag.Bool("c", false, "Користи се конфигурација")
 	InputPathPtr = flag.String("i", "", "Путања улазног фајла или директоријума")
 
 	Tbl = trie.BuildFromMap(map[string]string{
