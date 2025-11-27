@@ -101,7 +101,7 @@ func wordContainsMeasurementUnit(word string) bool {
 }
 
 func splitDigraphs(str string) string {
-	lowercaseStr := strings.ToLower(str)
+	lowercaseStr := strings.ToLower(trimExcessiveCharacters((str)))
 	strout := strings.Clone(str)
 	for digraph := range dictionary.DigraphExceptions {
 		if !strings.Contains(lowercaseStr, digraph) {
