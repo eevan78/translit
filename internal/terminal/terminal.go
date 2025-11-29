@@ -48,7 +48,7 @@ func prepareInputDirectory() {
 	}
 
 	fmt.Println("Улазни фајлови:")
-	fmt.Println(dictionary.InputFilePaths)
+	printFilePaths(dictionary.InputFilePaths)
 }
 
 func prepareOutputDirectory() {
@@ -70,7 +70,7 @@ func prepareOutputDirectory() {
 	} else {
 		fmt.Println("Излазни фајл:")
 	}
-	fmt.Println(dictionary.OutputFilePaths)
+	printFilePaths(dictionary.OutputFilePaths)
 }
 
 func prepareInputFile() {
@@ -107,7 +107,7 @@ func prepareInputFile() {
 	dictionary.InputFilePaths = append(dictionary.InputFilePaths, absPath)
 
 	fmt.Println("Улазни фајл:")
-	fmt.Println(dictionary.InputFilePaths)
+	printFilePaths(dictionary.InputFilePaths)
 }
 
 func CreateOutputFile(filename string) {
@@ -185,5 +185,11 @@ func ProcessFilePaths() {
 			prepareInputFile()
 		}
 		prepareOutputDirectory()
+	}
+}
+
+func printFilePaths(filePaths []string) {
+	for i := range filePaths {
+		fmt.Println(filePaths[i])
 	}
 }
