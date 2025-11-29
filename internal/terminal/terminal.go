@@ -65,7 +65,11 @@ func prepareOutputDirectory() {
 		dictionary.OutputFilePaths = append(dictionary.OutputFilePaths, filepath.Join(absPath, dictionary.InputFilenames[i]))
 	}
 
-	fmt.Println("Излазни фајлови:")
+	if len(dictionary.OutputFilePaths) > 1 {
+		fmt.Println("Излазни фајлови:")
+	} else {
+		fmt.Println("Излазни фајл:")
+	}
 	fmt.Println(dictionary.OutputFilePaths)
 }
 
