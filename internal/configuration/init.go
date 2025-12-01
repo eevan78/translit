@@ -15,7 +15,7 @@ func ConfigInit() {
 	if *dictionary.ConfigPtr {
 		readConfig()
 		initVars()
-		inifFlags()
+		initFlags()
 	}
 }
 
@@ -47,7 +47,7 @@ func defaultVars() {
 	viper.SetDefault("version", "v0.3.0")
 }
 
-func inifFlags() {
+func initFlags() {
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	viper.BindPFlags(pflag.CommandLine)
 	*dictionary.C2lPtr = configuration.C2lPtr

@@ -32,30 +32,23 @@ func OpenInputFile(filename string) {
 }
 
 func prepareInputDirectory() {
-	isDirectory, errors := isDirectory(*dictionary.InputPathPtr)
-	if errors != nil {
-		panic(errors)
+	inputDir, err := os.Open(*dictionary.InputPathPtr)
+	if err != nil {
+		panic(err)
 	}
 
-	if isDirectory {
-		inputDir, err := os.Open(*dictionary.InputPathPtr)
-		if err != nil {
-			panic(err)
-		}
-
-		dictionary.InputFilenames, err = inputDir.Readdirnames(0)
-		if err != nil {
-			panic(err)
-		}
-
-		absPath, _ := filepath.Abs(*dictionary.InputPathPtr)
-		for i := range dictionary.InputFilenames {
-			dictionary.InputFilePaths = append(dictionary.InputFilePaths, filepath.Join(absPath, dictionary.InputFilenames[i]))
-		}
-
-		fmt.Println("Улазни фајлови:")
-		fmt.Println(dictionary.InputFilePaths)
+	dictionary.InputFilenames, err = inputDir.Readdirnames(0)
+	if err != nil {
+		panic(err)
 	}
+
+	absPath, _ := filepath.Abs(*dictionary.InputPathPtr)
+	for i := range dictionary.InputFilenames {
+		dictionary.InputFilePaths = append(dictionary.InputFilePaths, filepath.Join(absPath, dictionary.InputFilenames[i]))
+	}
+
+	fmt.Println("Улазни фајлови:")
+	fmt.Println(dictionary.InputFilePaths)
 }
 
 func prepareOutputDirectory() {
