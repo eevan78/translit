@@ -12,7 +12,7 @@ import (
 var configuration Configurations
 
 func ConfigInit() {
-	if *dictionary.ConfigPtr == true {
+	if *dictionary.ConfigPtr {
 		readConfig()
 		initVars()
 		inifFlags()
@@ -50,18 +50,9 @@ func defaultVars() {
 func inifFlags() {
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	viper.BindPFlags(pflag.CommandLine)
-	defaultFlags()
 	*dictionary.C2lPtr = configuration.C2lPtr
 	*dictionary.L2cPtr = configuration.L2cPtr
 	*dictionary.HtmlPtr = configuration.HtmlPtr
 	*dictionary.TextPtr = configuration.TextPtr
 	*dictionary.InputPathPtr = configuration.InputPathPtr
-}
-
-func defaultFlags() {
-	configuration.C2lPtr = false
-	configuration.L2cPtr = true
-	configuration.HtmlPtr = false
-	configuration.TextPtr = true
-	configuration.InputPathPtr = ""
 }

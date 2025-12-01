@@ -17,6 +17,8 @@ func main() {
 
 	configuration.ConfigInit()
 
+	terminal.ProcessFilePaths()
+
 	if *dictionary.HtmlPtr {
 		language.TransliterateHtml()
 	} else if *dictionary.TextPtr {

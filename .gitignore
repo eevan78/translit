@@ -7,7 +7,7 @@
 *.dll
 *.so
 *.dylib
-/translit
+translit
 
 # Test binary, built with `go test -c`
 *.test
