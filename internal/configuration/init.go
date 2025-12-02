@@ -39,7 +39,7 @@ func initVars() {
 	defaultVars()
 
 	dictionary.OutputDir = viper.GetString("OutputDir")
-	dictionary.Version = viper.GetString("Version")
+	dictionary.ConfigVersion = viper.GetString("Version")
 }
 
 func defaultVars() {

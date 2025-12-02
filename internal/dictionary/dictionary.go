@@ -19,8 +19,9 @@ var (
 	Suffmap     = strings.NewReplacer(")", ")", "'", "’", "“", "”", "\"", "”", "‘", "’", "…", "…", "!", "!", ",", ",", "?", "?", ".", ".")
 	Fixdigraphs = regexp.MustCompile(`\p{Lu}*(Dž|Nj|Lj)\p{Lu}+(Dž|Nj|Lj)?\p{Lu}*`)
 
-	Doit    = true
-	Version string
+	Doit           = true
+	ConfigVersion  string
+	ProgramVersion = "0.3.0"
 
 	Rdr             = bufio.NewReader(os.Stdin)
 	Out             = bufio.NewWriter(os.Stdout)
