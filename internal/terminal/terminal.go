@@ -134,41 +134,41 @@ func isDirectory(path string) (bool, error) {
 	return fileInfo.IsDir(), err
 }
 
-func arrayContainsSubstring(array []string, value string) bool {
-	for _, element := range array {
-		if strings.Contains(element, value) {
-			return true
-		}
-	}
-	return false
-}
-
-// Reset opposite flag for the one added as a command line argument.
-func resetOppositeFlags() {
-	arguments := os.Args[1:]
-
-	if arrayContainsSubstring(arguments, "l2c") {
-		*dictionary.C2lPtr = false
-	}
-	if arrayContainsSubstring(arguments, "c2l") {
-		*dictionary.L2cPtr = false
-	}
-	if arrayContainsSubstring(arguments, "html") {
-		*dictionary.TextPtr = false
-	}
-	if arrayContainsSubstring(arguments, "text") {
-		*dictionary.HtmlPtr = false
-	}
-}
-
 func ProcessFlags() {
 	flag.Usage = pomoc
-	resetOppositeFlags()
 	flag.Parse()
-	if !*dictionary.ConfigPtr && (*dictionary.L2cPtr == *dictionary.C2lPtr || *dictionary.HtmlPtr == *dictionary.TextPtr) ||
-		*dictionary.ConfigPtr && (*dictionary.L2cPtr || *dictionary.C2lPtr || *dictionary.HtmlPtr || *dictionary.TextPtr) {
-		pomoc()
-		os.Exit(1)
+}
+
+func CheckFlags() {
+	if *dictionary.InputPathPtr != "" {
+		// file no matter config
+		if *dictionary.HtmlPtr || *dictionary.TextPtr {
+			pomoc()
+			os.Exit(1)
+		}
+	} else {
+		// std in
+		arguments := os.Args[1:]
+		if *dictionary.ConfigPtr {
+			// config
+			if len(arguments) == 1 {
+				// program called only with -c flag so we test config
+				if *dictionary.L2cPtr == *dictionary.C2lPtr || *dictionary.HtmlPtr == *dictionary.TextPtr {
+					pomoc()
+					os.Exit(1)
+				}
+			} else {
+				// program called with multiple flags
+				pomoc()
+				os.Exit(1)
+			}
+		} else {
+			// no config
+			if *dictionary.L2cPtr == *dictionary.C2lPtr || *dictionary.HtmlPtr == *dictionary.TextPtr {
+				pomoc()
+				os.Exit(1)
+			}
+		}
 	}
 }
 

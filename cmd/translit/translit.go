@@ -17,6 +17,8 @@ func main() {
 
 	configuration.ConfigInit()
 
+	terminal.CheckFlags()
+
 	terminal.ProcessFilePaths()
 
 	if *dictionary.HtmlPtr {
