@@ -8,19 +8,11 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/cavaliergopher/grab/v3"
 	"github.com/eevan78/translit/internal/dictionary"
 	"github.com/eevan78/translit/internal/exit"
 )
-
-func pomoc() {
-	fmt.Fprintf(flag.CommandLine.Output(), "Ово је филтер %s верзија %s\nСаставио eevan78, 2024-%v\n\n", os.Args[0], dictionary.ProgramVersion, (time.Now()).Year())
-	fmt.Fprintf(flag.CommandLine.Output(), "Филтер чита UTF-8 кодирани текст са стандардног улаза или из наведеног фајла и исписује га на\nстандардни излаз или наведени фајл, пресловљен сагласно са следећим заставицама:\n")
-	flag.PrintDefaults()
-	fmt.Fprintf(flag.CommandLine.Output(), "\nКада се наведе -c, не сме да се наведе ниједна друга заставица. Програм се подешава читањем\nконфигурације. У супротном, мора да се наведе по једна и само једна заставица из обе групе\nСмер и Формат. Заставице за путању улазног и излазног фајла, као и излазног директоријума\nнису обавезне. Целе речи између „<|” и „|>” у простом тексту се не пресловљавају у ћирилицу.\nТекст унутар <span lang=\"sr-Latn\"></span> елемента у (X)HTML се не пресловљава у ћирилицу,\nа текст унутар <span lang=\"sr-Cyrl\"></span> се не пресловљава у латиницу.\n\nПримери:\n%s -l2c -html\t\tпреслови (X)HTML у ћирилицу\n%s -text -c2l\t\tпреслови прости текст у латиницу\n%s -c\t\t\tпрограм чита подешавања из фајла конфигурације\n", os.Args[0], os.Args[0], os.Args[0])
-}
 
 func OpenInputFile(filename string) {
 	inputFile, err := os.Open(filename)
@@ -135,7 +127,7 @@ func isDirectory(path string) (bool, error) {
 }
 
 func ProcessFlags() {
-	flag.Usage = pomoc
+	flag.Usage = exit.Pomoc
 	flag.Parse()
 }
 
@@ -143,8 +135,7 @@ func CheckFlags() {
 	if *dictionary.InputPathPtr != "" {
 		// file no matter config
 		if *dictionary.HtmlPtr || *dictionary.TextPtr {
-			pomoc()
-			os.Exit(1)
+			exit.ExitWithHelp()
 		}
 	} else {
 		// std in
@@ -154,19 +145,16 @@ func CheckFlags() {
 			if len(arguments) == 1 {
 				// program called only with -c flag so we test config
 				if *dictionary.L2cPtr == *dictionary.C2lPtr || *dictionary.HtmlPtr == *dictionary.TextPtr {
-					pomoc()
-					os.Exit(1)
+					exit.ExitWithHelp()
 				}
 			} else {
 				// program called with multiple flags
-				pomoc()
-				os.Exit(1)
+				exit.ExitWithHelp()
 			}
 		} else {
 			// no config
 			if *dictionary.L2cPtr == *dictionary.C2lPtr || *dictionary.HtmlPtr == *dictionary.TextPtr {
-				pomoc()
-				os.Exit(1)
+				exit.ExitWithHelp()
 			}
 		}
 	}
