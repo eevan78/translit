@@ -121,42 +121,36 @@ func splitDigraphs(str string) string {
 	return strout
 }
 
+func fixPunctuation(w string) string {
+	w = dictionary.Pref.ReplaceAllStringFunc(w, dictionary.Prefmap.Replace)
+	w = dictionary.Suff.ReplaceAllStringFunc(w, dictionary.Suffmap.Replace)
+	return w
+}
+
 func l2c(s string) string {
 	result := ""
 	w := 0
-	stopafter := false
 	word := strings.Clone(s)
-	if strings.HasSuffix(word, "|>") {
-		stopafter = true
-		word = strings.TrimSuffix(word, "|>")
-	}
+
 	// Fix punctuation
-	word = dictionary.Pref.ReplaceAllStringFunc(word, dictionary.Prefmap.Replace)
-	word = dictionary.Suff.ReplaceAllStringFunc(word, dictionary.Suffmap.Replace)
+	word = fixPunctuation(word)
 
 	word = splitDigraphs(word)
-	if dictionary.Doit {
-		for i, runeValue := range word {
-			if w > 1 {
-				w -= 1
-				continue
-			}
-			value, prefixLen, ok := dictionary.Tbl.SearchPrefixInString(word[i:])
-			if ok {
-				result += string(value)
-				w = utf8.RuneCountInString(string(word[i : i+prefixLen]))
-			} else {
-				result += string(runeValue)
-			}
+	for i, runeValue := range word {
+		if w > 1 {
+			w -= 1
+			continue
 		}
-	} else {
-		result = word
+		value, prefixLen, ok := dictionary.Tbl.SearchPrefixInString(word[i:])
+		if ok {
+			result += string(value)
+			w = utf8.RuneCountInString(string(word[i : i+prefixLen]))
+		} else {
+			result += string(runeValue)
+		}
 	}
 	// Remove ZWNJ from the transliterated word
 	result = strings.ReplaceAll(result, "\u200C", "")
-	if stopafter {
-		dictionary.Doit = true
-	}
 	return result
 }
 
@@ -172,8 +166,7 @@ func c2l(s string) string {
 	result := ""
 	word := strings.Clone(s)
 	// Fix punctuation
-	word = dictionary.Pref.ReplaceAllStringFunc(word, dictionary.Prefmap.Replace)
-	word = dictionary.Suff.ReplaceAllStringFunc(word, dictionary.Suffmap.Replace)
+	word = fixPunctuation(word)
 
 	for _, runeValue := range word {
 		value, ok := dictionary.Tbl1[string(runeValue)]
@@ -321,10 +314,22 @@ loop:
 		case nil:
 			lineprefix := dictionary.Whitepref.FindString(line)
 			words := strings.Fields(line)
+			doit := true
 			for n := range words {
 				if strings.HasPrefix(words[n], "<|") {
-					dictionary.Doit = false
-					words[n] = strings.TrimPrefix(words[n], "<|")
+					doit = false                                  // Do not transliterate
+					words[n] = strings.TrimPrefix(words[n], "<|") // Remove marker of the beginning
+					words[n] = fixPunctuation(words[n])           // Fix punctuation
+				}
+				if strings.HasSuffix(words[n], "|>") {
+					doit = true                                   // Transliterate after this word
+					words[n] = strings.TrimSuffix(words[n], "|>") // Remove marker of the end
+					words[n] = fixPunctuation(words[n])           // Fix punctuation
+					continue                                      // Move to the next word
+				}
+				if !doit {
+					words[n] = fixPunctuation(words[n]) // Fix punctuation
+					continue
 				}
 				if *dictionary.L2cPtr {
 					index := transliterationIndexOfWordStartsWith(strings.ToLower(words[n]), dictionary.WholeForeignWords, "-")
