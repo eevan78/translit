@@ -67,8 +67,6 @@ func TestReadingFromStdin(t *testing.T) {
 func TestL2CHtmlInputFileFromInternet(t *testing.T) {
 	*dictionary.L2cPtr = true
 	*dictionary.C2lPtr = false
-	*dictionary.HtmlPtr = true
-	*dictionary.TextPtr = false
 	*dictionary.InputPathPtr = "https://www.k1info.rs/kultura-i-umetnost/knjige/33243/bestseler-debitantski-roman-melisa-da-kosta/vest"
 	flag.Parse()
 
@@ -85,8 +83,6 @@ func TestL2CHtmlInputFileFromInternetWithTrailingSlash(t *testing.T) {
 	if os.Getenv("DO_TEST") == "1" {
 		*dictionary.L2cPtr = true
 		*dictionary.C2lPtr = false
-		*dictionary.HtmlPtr = true
-		*dictionary.TextPtr = false
 		*dictionary.InputPathPtr = "https://zadovoljna.nova.rs/fitnes-i-ishrana/francuski-tost-przenice-iz-rerne/"
 		flag.Parse()
 		main()
@@ -111,8 +107,6 @@ func TestL2CHtmlInputFileFromInternetWithTrailingSlash(t *testing.T) {
 func TestL2CTextInputFile(t *testing.T) {
 	*dictionary.L2cPtr = true
 	*dictionary.C2lPtr = false
-	*dictionary.HtmlPtr = false
-	*dictionary.TextPtr = true
 	*dictionary.InputPathPtr = "../../test/testdata/rec_godine.txt"
 	flag.Parse()
 
