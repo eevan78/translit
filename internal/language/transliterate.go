@@ -130,21 +130,17 @@ func fixPunctuation(w string) string {
 func l2c(s string) string {
 	result := ""
 	w := 0
-	word := strings.Clone(s)
-
-	// Fix punctuation
-	word = fixPunctuation(word)
-
-	word = splitDigraphs(word)
-	for i, runeValue := range word {
+	s = fixPunctuation(s)
+	s = splitDigraphs(s)
+	for i, runeValue := range s {
 		if w > 1 {
 			w -= 1
 			continue
 		}
-		value, prefixLen, ok := dictionary.Tbl.SearchPrefixInString(word[i:])
+		value, prefixLen, ok := dictionary.Tbl.SearchPrefixInString(s[i:])
 		if ok {
-			result += string(value)
-			w = utf8.RuneCountInString(string(word[i : i+prefixLen]))
+			result += value
+			w = utf8.RuneCountInString(s[i : i+prefixLen])
 		} else {
 			result += string(runeValue)
 		}
@@ -164,11 +160,9 @@ func Uppercase(s string) string {
 
 func c2l(s string) string {
 	result := ""
-	word := strings.Clone(s)
-	// Fix punctuation
-	word = fixPunctuation(word)
+	s = fixPunctuation(s)
 
-	for _, runeValue := range word {
+	for _, runeValue := range s {
 		value, ok := dictionary.Tbl1[string(runeValue)]
 		if ok {
 			result += value
@@ -319,16 +313,16 @@ loop:
 				if strings.HasPrefix(words[n], "<|") {
 					doit = false                                  // Do not transliterate
 					words[n] = strings.TrimPrefix(words[n], "<|") // Remove marker of the beginning
-					words[n] = fixPunctuation(words[n])           // Fix punctuation
+					words[n] = fixPunctuation(words[n])
 				}
 				if strings.HasSuffix(words[n], "|>") {
 					doit = true                                   // Transliterate after this word
 					words[n] = strings.TrimSuffix(words[n], "|>") // Remove marker of the end
-					words[n] = fixPunctuation(words[n])           // Fix punctuation
-					continue                                      // Move to the next word
+					words[n] = fixPunctuation(words[n])
+					continue // Move to the next word
 				}
 				if !doit {
-					words[n] = fixPunctuation(words[n]) // Fix punctuation
+					words[n] = fixPunctuation(words[n])
 					continue
 				}
 				if *dictionary.L2cPtr {
