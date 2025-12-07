@@ -36,9 +36,6 @@ var (
 	ConfigPtr    = flag.Bool("c", false, "Користи се конфигурација")
 	InputPathPtr = flag.String("i", "", "Путања улазног фајла или директоријума")
 
-	TextMime = "text/plain; charset=utf-8"
-	HtmlMime = "text/html; charset=utf-8"
-
 	Tbl = trie.BuildFromMap(map[string]string{
 		"A":   "А",
 		"B":   "Б",
