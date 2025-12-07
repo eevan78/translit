@@ -1,6 +1,7 @@
 package language
 
 import (
+	"fmt"
 	"io"
 	"regexp"
 	"strings"
@@ -12,6 +13,11 @@ import (
 	"github.com/eevan78/translit/internal/terminal"
 	"github.com/gabriel-vasile/mimetype"
 	"golang.org/x/net/html"
+)
+
+var (
+	textMime = "text/plain; charset=utf-8"
+	htmlMime = "text/html; charset=utf-8"
 )
 
 func looksLikeForeignWord(word string) bool {
@@ -362,27 +368,40 @@ func Transliterate() {
 		transliterateTextFile()
 	}
 	for i := range dictionary.InputFilenames {
-		mediaType, _ := detectFileType(dictionary.InputFilePaths[i])
+		mediaType, _, err := detectFileType(dictionary.InputFilePaths[i])
 
-		if mediaType == dictionary.TextMime || mediaType == dictionary.HtmlMime {
+		if err == nil {
 			terminal.OpenInputFile(dictionary.InputFilePaths[i])
 			terminal.CreateOutputFile(dictionary.OutputFilePaths[i])
 		}
 
 		switch mediaType {
-		case dictionary.TextMime:
+		case textMime:
 			transliterateTextFile()
-		case dictionary.HtmlMime:
+		case htmlMime:
 			transliterateHtmlFile()
+		default:
+			fmt.Printf("Грешка: %s - %v\n", dictionary.InputFilePaths[i], err)
 		}
 	}
 }
 
-func detectFileType(filePath string) (string, string) {
-	mediaType, err := mimetype.DetectFile(filePath)
+func detectFileType(filePath string) (string, string, error) {
+	mimeType, err := mimetype.DetectFile(filePath)
 	if err != nil {
 		panic(err)
 	}
 
-	return mediaType.String(), mediaType.Extension()
+	// converting to lower case not to worry about the case of retrieved string value
+	mediaType := strings.ToLower(mimeType.String())
+
+	if !isSupportedMediaType(mediaType) {
+		err = fmt.Errorf("тип фајла није подржан: %s", mediaType)
+	}
+
+	return mediaType, mimeType.Extension(), err
+}
+
+func isSupportedMediaType(mediaType string) bool {
+	return mediaType == textMime || mediaType == htmlMime
 }
