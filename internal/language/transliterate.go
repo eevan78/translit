@@ -2,24 +2,22 @@ package language
 
 import (
 	"fmt"
-	"io"
 	"regexp"
 	"strings"
 	"unicode"
 	"unicode/utf8"
 
 	"github.com/eevan78/translit/internal/dictionary"
-	"github.com/eevan78/translit/internal/exit"
 	"github.com/eevan78/translit/internal/terminal"
 	"github.com/gabriel-vasile/mimetype"
 	"golang.org/x/net/html"
 )
 
 var (
-	acceptedMime = map[string]func(){
-		"text/plain; charset=utf-8": transliterateTextFile,
-		"text/html; charset=utf-8":  transliterateHtmlFile,
-		"application/xhtml+xml":     transliterateHtmlFile,
+	acceptedMime = map[string]string{
+		"text":  "text/plain; charset=utf-8",
+		"html":  "text/html; charset=utf-8",
+		"xhtml": "application/xhtml+xml",
 	}
 )
 
@@ -298,95 +296,45 @@ func shouldTransliterate(n *html.Node) bool {
 	return shouldTranslit
 }
 
-func transliterateHtmlFile() {
-	doc, err := html.Parse(dictionary.Rdr)
-	if err != nil {
-		exit.ExitWithError(err)
+func Transliterate(documents []Document) []Document {
+
+	for i := range documents {
+		documents[i].open()
+		documents[i].transliterate()
 	}
-	traverseNode(doc)
-	if err := html.Render(dictionary.Out, doc); err != nil {
-		exit.ExitWithError(err)
-	}
-	_ = dictionary.Out.Flush()
+
+	return documents
 }
 
-func transliterateTextFile() {
+func CreateDocuments() []Document {
+	documents := []Document{}
 
-loop:
-	for {
-		switch line, err := dictionary.Rdr.ReadString('\n'); err {
-		case nil:
-			lineprefix := dictionary.Whitepref.FindString(line)
-			words := strings.Fields(line)
-			doit := true
-			for n := range words {
-				if strings.HasPrefix(words[n], "<|") {
-					doit = false                                  // Do not transliterate
-					words[n] = strings.TrimPrefix(words[n], "<|") // Remove marker of the beginning
-					words[n] = fixPunctuation(words[n])
-				}
-				if strings.HasSuffix(words[n], "|>") {
-					doit = true                                   // Transliterate after this word
-					words[n] = strings.TrimSuffix(words[n], "|>") // Remove marker of the end
-					words[n] = fixPunctuation(words[n])
-					continue // Move to the next word
-				}
-				if !doit {
-					words[n] = fixPunctuation(words[n])
-					continue
-				}
-				if *dictionary.L2cPtr {
-					index := transliterationIndexOfWordStartsWith(strings.ToLower(words[n]), dictionary.WholeForeignWords, "-")
-					if index >= 0 {
-						words[n] = string(words[n][:index]) + l2c(string(words[n][index:]))
-					} else if !looksLikeForeignWord(words[n]) {
-						words[n] = l2c(words[n])
-					}
-				} else if *dictionary.C2lPtr {
-					words[n] = c2l(words[n])
-				}
-			}
-
-			if lineprefix != "" && lineprefix != "\n" && len(words) != 0 {
-				words[0] = lineprefix + words[0]
-			}
-			outl := strings.Join(words, " ")
-			outl += "\n"
-			if _, err = dictionary.Out.WriteString(outl); err != nil {
-				exit.ExitWithError(err)
-			}
-			_ = dictionary.Out.Flush()
-
-		case io.EOF:
-			break loop
-
-		default:
-			exit.ExitWithError(err)
-		}
-	}
-}
-
-func Transliterate() {
 	if *dictionary.InputPathPtr == "" {
-		transliterateTextFile()
-	}
-	for i := range dictionary.InputFilenames {
-		mediaType, _, err := detectFileType(dictionary.InputFilePaths[i])
+		documents = append(documents, &StdIn{})
+	} else {
+		for i := range terminal.InputFilenames {
+			mediaType, _ := detectFileType(terminal.InputFilePaths[i])
 
-		if err == nil {
-			terminal.OpenInputFile(dictionary.InputFilePaths[i])
-			terminal.CreateOutputFile(dictionary.OutputFilePaths[i])
-		}
+			switch mediaType {
+			case acceptedMime["text"]:
+				documents = append(documents,
+					&TextDocument{inputFilePath: terminal.InputFilePaths[i],
+						outputFilePath: terminal.OutputFilePaths[i]})
+			case acceptedMime["html"], acceptedMime["xhtml"]:
+				documents = append(documents,
+					&HtmlDocument{inputFilePath: terminal.InputFilePaths[i],
+						outputFilePath: terminal.OutputFilePaths[i]})
+			default:
+				fmt.Printf("Грешка - тип фајла %s није подржан: %s\n", mediaType, terminal.InputFilePaths[i])
 
-		if acceptedMime[mediaType] != nil {
-			acceptedMime[mediaType]()
-		} else {
-			fmt.Printf("Грешка: %s - %v\n", dictionary.InputFilePaths[i], err)
+			}
 		}
 	}
+
+	return documents
 }
 
-func detectFileType(filePath string) (string, string, error) {
+func detectFileType(filePath string) (string, string) {
 	mimeType, err := mimetype.DetectFile(filePath)
 	if err != nil {
 		panic(err)
@@ -395,16 +343,5 @@ func detectFileType(filePath string) (string, string, error) {
 	// converting to lower case not to worry about the case of retrieved string value
 	mediaType := strings.ToLower(mimeType.String())
 
-	if !isSupportedMediaType(mediaType) {
-		err = fmt.Errorf("тип фајла није подржан: %s", mediaType)
-	}
-
-	return mediaType, mimeType.Extension(), err
-}
-
-func isSupportedMediaType(mediaType string) bool {
-	if acceptedMime[mediaType] != nil {
-		return true
-	}
-	return false
+	return mediaType, mimeType.Extension()
 }

@@ -1,0 +1,31 @@
+package language
+
+import (
+	"github.com/eevan78/translit/internal/exit"
+	"github.com/eevan78/translit/internal/terminal"
+	"golang.org/x/net/html"
+)
+
+type HtmlDocument struct {
+	inputFilePath  string
+	outputFilePath string
+	fop            *terminal.FileOperator
+}
+
+func (document *HtmlDocument) open() {
+	document.fop = &terminal.FileOperator{}
+	document.fop.Open(document.inputFilePath)
+	document.fop.Create(document.outputFilePath)
+}
+
+func (document *HtmlDocument) transliterate() {
+	node, err := html.Parse(document.fop.Reader)
+	if err != nil {
+		exit.ExitWithError(err)
+	}
+	traverseNode(node)
+	if err := html.Render(document.fop.Writer, node); err != nil {
+		exit.ExitWithError(err)
+	}
+	_ = document.fop.Writer.Flush()
+}
