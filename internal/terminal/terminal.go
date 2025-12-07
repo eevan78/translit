@@ -134,7 +134,7 @@ func ProcessFlags() {
 func CheckFlags() {
 	if *dictionary.InputPathPtr != "" {
 		// file no matter config
-		if *dictionary.L2cPtr == *dictionary.C2lPtr || *dictionary.HtmlPtr == *dictionary.TextPtr {
+		if *dictionary.L2cPtr == *dictionary.C2lPtr || *dictionary.HtmlPtr || *dictionary.TextPtr {
 			exit.ExitWithHelp()
 		}
 	} else {
