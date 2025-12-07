@@ -14,13 +14,33 @@ import (
 	"github.com/eevan78/translit/internal/exit"
 )
 
-func OpenInputFile(filename string) {
+var (
+	Rdr             = bufio.NewReader(os.Stdin)
+	Out             = bufio.NewWriter(os.Stdout)
+	InputFilenames  []string
+	InputFilePaths  []string
+	OutputFilePaths []string
+	OutputDir       = "output"
+)
+
+func OpenInputFile(filename string) (*os.File, *bufio.Reader) {
 	inputFile, err := os.Open(filename)
 	if err != nil {
 		panic(err)
 	}
 
-	dictionary.Rdr = bufio.NewReader(inputFile)
+	Rdr = bufio.NewReader(inputFile)
+	return inputFile, Rdr
+}
+
+func CreateOutputFile(filename string) (*os.File, *bufio.Writer) {
+	outputFile, err := os.Create(filename)
+	if err != nil {
+		panic(err)
+	}
+
+	Out = bufio.NewWriter(outputFile)
+	return outputFile, Out
 }
 
 func prepareInputDirectory() {
@@ -29,22 +49,22 @@ func prepareInputDirectory() {
 		panic(err)
 	}
 
-	dictionary.InputFilenames, err = inputDir.Readdirnames(0)
+	InputFilenames, err = inputDir.Readdirnames(0)
 	if err != nil {
 		panic(err)
 	}
 
 	absPath, _ := filepath.Abs(*dictionary.InputPathPtr)
-	for i := range dictionary.InputFilenames {
-		dictionary.InputFilePaths = append(dictionary.InputFilePaths, filepath.Join(absPath, dictionary.InputFilenames[i]))
+	for i := range InputFilenames {
+		InputFilePaths = append(InputFilePaths, filepath.Join(absPath, InputFilenames[i]))
 	}
 
 	fmt.Println("Улазни фајлови:")
-	printFilePaths(dictionary.InputFilePaths)
+	printFilePaths(InputFilePaths)
 }
 
 func prepareOutputDirectory() {
-	outDirName := filepath.Join(filepath.Dir(*dictionary.InputPathPtr), dictionary.OutputDir)
+	outDirName := filepath.Join(filepath.Dir(*dictionary.InputPathPtr), OutputDir)
 	if _, err := os.Stat(outDirName); errors.Is(err, os.ErrNotExist) {
 		err := os.Mkdir(outDirName, os.ModePerm)
 		if err != nil {
@@ -53,16 +73,16 @@ func prepareOutputDirectory() {
 	}
 
 	absPath, _ := filepath.Abs(outDirName)
-	for i := range dictionary.InputFilenames {
-		dictionary.OutputFilePaths = append(dictionary.OutputFilePaths, filepath.Join(absPath, dictionary.InputFilenames[i]))
+	for i := range InputFilenames {
+		OutputFilePaths = append(OutputFilePaths, filepath.Join(absPath, InputFilenames[i]))
 	}
 
-	if len(dictionary.OutputFilePaths) > 1 {
+	if len(OutputFilePaths) > 1 {
 		fmt.Println("Излазни фајлови:")
 	} else {
 		fmt.Println("Излазни фајл:")
 	}
-	printFilePaths(dictionary.OutputFilePaths)
+	printFilePaths(OutputFilePaths)
 }
 
 func prepareInputFile() {
@@ -94,21 +114,12 @@ func prepareInputFile() {
 
 	// strip directories from the input filepath if exist
 
-	dictionary.InputFilenames = append(dictionary.InputFilenames, filepath.Base(*dictionary.InputPathPtr))
+	InputFilenames = append(InputFilenames, filepath.Base(*dictionary.InputPathPtr))
 	absPath, _ := filepath.Abs(*dictionary.InputPathPtr)
-	dictionary.InputFilePaths = append(dictionary.InputFilePaths, absPath)
+	InputFilePaths = append(InputFilePaths, absPath)
 
 	fmt.Println("Улазни фајл:")
-	printFilePaths(dictionary.InputFilePaths)
-}
-
-func CreateOutputFile(filename string) {
-	outputFile, err := os.Create(filename)
-	if err != nil {
-		panic(err)
-	}
-
-	dictionary.Out = bufio.NewWriter(outputFile)
+	printFilePaths(InputFilePaths)
 }
 
 func isDirectory(path string) (bool, error) {

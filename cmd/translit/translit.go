@@ -20,5 +20,8 @@ func main() {
 
 	terminal.ProcessFilePaths()
 
-	language.Transliterate()
+	documents := language.CreateDocuments()
+
+	language.Transliterate(documents)
+
 }

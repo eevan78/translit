@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/eevan78/translit/internal/dictionary"
+	"github.com/eevan78/translit/internal/terminal"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -38,7 +39,7 @@ func readConfig() {
 func initVars() {
 	defaultVars()
 
-	dictionary.OutputDir = viper.GetString("OutputDir")
+	terminal.OutputDir = viper.GetString("OutputDir")
 	dictionary.ConfigVersion = viper.GetString("Version")
 }
 

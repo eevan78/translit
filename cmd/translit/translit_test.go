@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/eevan78/translit/internal/dictionary"
+	"github.com/eevan78/translit/internal/terminal"
 )
 
 func TestReadingFromStdin(t *testing.T) {
@@ -121,13 +122,13 @@ func TestL2CTextInputFile(t *testing.T) {
 }
 
 func clearData() {
-	dictionary.InputFilenames = nil
-	dictionary.InputFilePaths = nil
-	dictionary.OutputFilePaths = nil
+	terminal.InputFilenames = nil
+	terminal.InputFilePaths = nil
+	terminal.OutputFilePaths = nil
 }
 
 func getOutputFileName() string {
-	outDirPath := filepath.Join(filepath.Dir(*dictionary.InputPathPtr), dictionary.OutputDir)
+	outDirPath := filepath.Join(filepath.Dir(*dictionary.InputPathPtr), terminal.OutputDir)
 	absDirectoryPath, _ := filepath.Abs(outDirPath)
 	absFilenamePath := filepath.Join(absDirectoryPath, filepath.Base(*dictionary.InputPathPtr))
 

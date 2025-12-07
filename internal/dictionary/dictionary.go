@@ -1,9 +1,7 @@
 package dictionary
 
 import (
-	"bufio"
 	"flag"
-	"os"
 	"regexp"
 	"strings"
 
@@ -21,13 +19,6 @@ var (
 
 	ConfigVersion  string
 	ProgramVersion = "0.4.0"
-
-	Rdr             = bufio.NewReader(os.Stdin)
-	Out             = bufio.NewWriter(os.Stdout)
-	InputFilenames  []string
-	InputFilePaths  []string
-	OutputFilePaths []string
-	OutputDir       = "output"
 
 	L2cPtr       = flag.Bool("l2c", false, "`Смер` пресловљавања је латиница у ћирилицу")
 	C2lPtr       = flag.Bool("c2l", false, "`Смер` пресловљавања је ћирилица у латиницу")
