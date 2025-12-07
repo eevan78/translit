@@ -7,7 +7,6 @@ package main
 
 import (
 	"github.com/eevan78/translit/internal/configuration"
-	"github.com/eevan78/translit/internal/dictionary"
 	"github.com/eevan78/translit/internal/language"
 	"github.com/eevan78/translit/internal/terminal"
 )
@@ -21,10 +20,5 @@ func main() {
 
 	terminal.ProcessFilePaths()
 
-	if *dictionary.HtmlPtr {
-		language.TransliterateHtml()
-	} else if *dictionary.TextPtr {
-		language.TransliterateText()
-	}
-
+	language.Transliterate()
 }

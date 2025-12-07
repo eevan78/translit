@@ -10,6 +10,7 @@ import (
 	"github.com/eevan78/translit/internal/dictionary"
 	"github.com/eevan78/translit/internal/exit"
 	"github.com/eevan78/translit/internal/terminal"
+	"github.com/gabriel-vasile/mimetype"
 	"golang.org/x/net/html"
 )
 
@@ -356,24 +357,32 @@ loop:
 	}
 }
 
-func TransliterateHtml() {
+func Transliterate() {
 	if *dictionary.InputPathPtr == "" {
-		transliterateHtmlFile()
+		transliterateTextFile()
 	}
 	for i := range dictionary.InputFilenames {
-		terminal.OpenInputFile(dictionary.InputFilePaths[i])
-		terminal.CreateOutputFile(dictionary.OutputFilePaths[i])
-		transliterateHtmlFile()
+		mediaType, _ := detectFileType(dictionary.InputFilePaths[i])
+
+		if mediaType == dictionary.TextMime || mediaType == dictionary.HtmlMime {
+			terminal.OpenInputFile(dictionary.InputFilePaths[i])
+			terminal.CreateOutputFile(dictionary.OutputFilePaths[i])
+		}
+
+		switch mediaType {
+		case dictionary.TextMime:
+			transliterateTextFile()
+		case dictionary.HtmlMime:
+			transliterateHtmlFile()
+		}
 	}
 }
 
-func TransliterateText() {
-	if *dictionary.InputPathPtr == "" {
-		transliterateTextFile()
+func detectFileType(filePath string) (string, string) {
+	mediaType, err := mimetype.DetectFile(filePath)
+	if err != nil {
+		panic(err)
 	}
-	for i := range dictionary.InputFilenames {
-		terminal.OpenInputFile(dictionary.InputFilePaths[i])
-		terminal.CreateOutputFile(dictionary.OutputFilePaths[i])
-		transliterateTextFile()
-	}
+
+	return mediaType.String(), mediaType.Extension()
 }
