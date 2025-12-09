@@ -16,8 +16,11 @@ import (
 )
 
 var (
-	textMime = "text/plain; charset=utf-8"
-	htmlMime = "text/html; charset=utf-8"
+	acceptedMime = map[string]func(){
+		"text/plain; charset=utf-8": transliterateTextFile,
+		"text/html; charset=utf-8":  transliterateHtmlFile,
+		"application/xhtml+xml":     transliterateHtmlFile,
+	}
 )
 
 func looksLikeForeignWord(word string) bool {
@@ -375,12 +378,9 @@ func Transliterate() {
 			terminal.CreateOutputFile(dictionary.OutputFilePaths[i])
 		}
 
-		switch mediaType {
-		case textMime:
-			transliterateTextFile()
-		case htmlMime:
-			transliterateHtmlFile()
-		default:
+		if acceptedMime[mediaType] != nil {
+			acceptedMime[mediaType]()
+		} else {
 			fmt.Printf("Грешка: %s - %v\n", dictionary.InputFilePaths[i], err)
 		}
 	}
@@ -403,5 +403,8 @@ func detectFileType(filePath string) (string, string, error) {
 }
 
 func isSupportedMediaType(mediaType string) bool {
-	return mediaType == textMime || mediaType == htmlMime
+	if acceptedMime[mediaType] != nil {
+		return true
+	}
+	return false
 }
