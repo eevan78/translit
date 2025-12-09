@@ -20,7 +20,7 @@ var (
 	Fixdigraphs = regexp.MustCompile(`\p{Lu}*(Dž|Nj|Lj)\p{Lu}+(Dž|Nj|Lj)?\p{Lu}*`)
 
 	ConfigVersion  string
-	ProgramVersion = "0.3.0"
+	ProgramVersion = "0.4.0"
 
 	Rdr             = bufio.NewReader(os.Stdin)
 	Out             = bufio.NewWriter(os.Stdout)
