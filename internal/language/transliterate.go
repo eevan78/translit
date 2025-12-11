@@ -356,11 +356,11 @@ func CreateDocuments() []Document {
 				documents = append(documents,
 					&TextDocument{inputFilePath: terminal.InputFilePaths[i],
 						outputFilePath: terminal.OutputFilePaths[i]})
-			case acceptedMime["html"], acceptedMime["xhtml"]:
+			case acceptedMime["html"]:
 				documents = append(documents,
 					&HtmlDocument{inputFilePath: terminal.InputFilePaths[i],
 						outputFilePath: terminal.OutputFilePaths[i]})
-			case acceptedMime["xml"]:
+			case acceptedMime["xml"], acceptedMime["xhtml"]:
 				documents = append(documents,
 					&XmlDocument{inputFilePath: terminal.InputFilePaths[i],
 						outputFilePath: terminal.OutputFilePaths[i]})
