@@ -3,6 +3,7 @@ module github.com/eevan78/translit
 go 1.24.2
 
 require (
+	github.com/beevik/etree v1.6.0
 	github.com/cavaliergopher/grab/v3 v3.0.1
 	github.com/gabriel-vasile/mimetype v1.4.11
 	github.com/porfirion/trie v1.0.0
