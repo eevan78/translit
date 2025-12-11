@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	Rdr             = bufio.NewReader(os.Stdin)
-	Out             = bufio.NewWriter(os.Stdout)
+	rdr             = bufio.NewReader(os.Stdin)
+	out             = bufio.NewWriter(os.Stdout)
 	InputFilenames  []string
 	InputFilePaths  []string
 	OutputFilePaths []string
@@ -29,8 +29,8 @@ func OpenInputFile(filename string) (*os.File, *bufio.Reader) {
 		panic(err)
 	}
 
-	Rdr = bufio.NewReader(inputFile)
-	return inputFile, Rdr
+	rdr = bufio.NewReader(inputFile)
+	return inputFile, rdr
 }
 
 func CreateOutputFile(filename string) (*os.File, *bufio.Writer) {
@@ -39,8 +39,8 @@ func CreateOutputFile(filename string) (*os.File, *bufio.Writer) {
 		panic(err)
 	}
 
-	Out = bufio.NewWriter(outputFile)
-	return outputFile, Out
+	out = bufio.NewWriter(outputFile)
+	return outputFile, out
 }
 
 func prepareInputDirectory() {
