@@ -23,7 +23,7 @@ func (document *HtmlDocument) transliterate() {
 	if err != nil {
 		exit.ExitWithError(err)
 	}
-	traverseNode(node)
+	traverseHtmlNode(node)
 	if err := html.Render(document.fop.Writer, node); err != nil {
 		exit.ExitWithError(err)
 	}

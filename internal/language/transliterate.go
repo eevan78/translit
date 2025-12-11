@@ -7,6 +7,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/beevik/etree"
 	"github.com/eevan78/translit/internal/dictionary"
 	"github.com/eevan78/translit/internal/terminal"
 	"github.com/gabriel-vasile/mimetype"
@@ -18,6 +19,7 @@ var (
 		"text":  "text/plain; charset=utf-8",
 		"html":  "text/html; charset=utf-8",
 		"xhtml": "application/xhtml+xml",
+		"xml":   "text/xml; charset=utf-8",
 	}
 )
 
@@ -196,7 +198,7 @@ func allWhite(s string) bool {
 	return result
 }
 
-func traverseNode(n *html.Node) {
+func traverseHtmlNode(n *html.Node) {
 	switch n.Type {
 	case html.ElementNode:
 		// Properly adjust the lang attribute, or add it if it's missing
@@ -259,7 +261,7 @@ func traverseNode(n *html.Node) {
 	}
 
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		traverseNode(c)
+		traverseHtmlNode(c)
 	}
 }
 
@@ -296,6 +298,40 @@ func shouldTransliterate(n *html.Node) bool {
 	return shouldTranslit
 }
 
+func traverseXmlNode(n *etree.Element) {
+	txt := n.Text()
+
+	// Transliterate if text is not inside a script or a style element
+	if !allWhite(txt) {
+		nodeprefix := dictionary.Whitepref.FindString(txt)
+		nodesuffix := dictionary.Whitesuff.FindString(txt)
+		words := strings.Fields(txt)
+
+		for word := range words {
+			if *dictionary.L2cPtr {
+				index := transliterationIndexOfWordStartsWith(strings.ToLower(words[word]), dictionary.WholeForeignWords, "-")
+				if index >= 0 {
+					words[word] = string(words[word][:index]) + l2c(string(words[word][index:]))
+				} else if !looksLikeForeignWord(words[word]) {
+					words[word] = l2c(words[word])
+				}
+			} else { // *c2lPtr
+				words[word] = c2l(words[word])
+			}
+		}
+
+		// Preserve the whitespace at the beginning and at the end of the node data
+		words[0] = nodeprefix + words[0]
+		words[len(words)-1] += nodesuffix
+		txt = strings.Join(words, " ")
+		n.SetText(txt)
+	}
+
+	for _, c := range n.ChildElements() {
+		traverseXmlNode(c)
+	}
+}
+
 func Transliterate(documents []Document) []Document {
 
 	for i := range documents {
@@ -323,6 +359,10 @@ func CreateDocuments() []Document {
 			case acceptedMime["html"], acceptedMime["xhtml"]:
 				documents = append(documents,
 					&HtmlDocument{inputFilePath: terminal.InputFilePaths[i],
+						outputFilePath: terminal.OutputFilePaths[i]})
+			case acceptedMime["xml"]:
+				documents = append(documents,
+					&XmlDocument{inputFilePath: terminal.InputFilePaths[i],
 						outputFilePath: terminal.OutputFilePaths[i]})
 			default:
 				fmt.Printf("Грешка - тип фајла %s није подржан: %s\n", mediaType, terminal.InputFilePaths[i])
