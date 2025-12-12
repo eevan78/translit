@@ -7,6 +7,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/beevik/etree"
 	"github.com/eevan78/translit/internal/dictionary"
 	"github.com/eevan78/translit/internal/terminal"
 	"github.com/gabriel-vasile/mimetype"
@@ -18,6 +19,7 @@ var (
 		"text":  "text/plain; charset=utf-8",
 		"html":  "text/html; charset=utf-8",
 		"xhtml": "application/xhtml+xml",
+		"xml":   "text/xml; charset=utf-8",
 	}
 )
 
@@ -196,7 +198,7 @@ func allWhite(s string) bool {
 	return result
 }
 
-func traverseNode(n *html.Node) {
+func traverseHtmlNode(n *html.Node) {
 	switch n.Type {
 	case html.ElementNode:
 		// Properly adjust the lang attribute, or add it if it's missing
@@ -259,7 +261,7 @@ func traverseNode(n *html.Node) {
 	}
 
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		traverseNode(c)
+		traverseHtmlNode(c)
 	}
 }
 
@@ -296,6 +298,51 @@ func shouldTransliterate(n *html.Node) bool {
 	return shouldTranslit
 }
 
+// Traverses through the XML starting from the given xml element (node). Firstly, it transliterates text which can be mixed
+// with other inner xml elements within this node. Then, it goes through the node and recursively do the traversal.
+func traverseXmlNode(node *etree.Element) {
+	// iterates through element's Childs and transliterates only the text childs
+	// these childs are any part of the text file including new line characters, inline text fields and xml elements
+	for _, child := range node.Child {
+		if childData, ok := child.(*etree.CharData); ok {
+			// if a child consists of a text transliterate it
+			line := childData.Data
+			if !allWhite(line) {
+				childData.Data = transliterateXmlText(childData.Data)
+			}
+		}
+	}
+	// iterates through the Child elements which represent only xml elements
+	for _, childElement := range node.ChildElements() {
+		traverseXmlNode(childElement)
+	}
+}
+func transliterateXmlText(line string) string {
+
+	lineprefix := dictionary.Whitepref.FindString(line)
+	linesuffix := dictionary.Whitesuff.FindString(line)
+	words := strings.Fields(line)
+
+	for word := range words {
+		if *dictionary.L2cPtr {
+			index := transliterationIndexOfWordStartsWith(strings.ToLower(words[word]), dictionary.WholeForeignWords, "-")
+			if index >= 0 {
+				words[word] = string(words[word][:index]) + l2c(string(words[word][index:]))
+			} else if !looksLikeForeignWord(words[word]) {
+				words[word] = l2c(words[word])
+			}
+		} else { // *c2lPtr
+			words[word] = c2l(words[word])
+		}
+	}
+
+	// Preserve the whitespace at the beginning and at the end of the line
+	words[0] = lineprefix + words[0]
+	words[len(words)-1] += linesuffix
+	line = strings.Join(words, " ")
+	return line
+}
+
 func Transliterate(documents []Document) []Document {
 
 	for i := range documents {
@@ -320,9 +367,13 @@ func CreateDocuments() []Document {
 				documents = append(documents,
 					&TextDocument{inputFilePath: terminal.InputFilePaths[i],
 						outputFilePath: terminal.OutputFilePaths[i]})
-			case acceptedMime["html"], acceptedMime["xhtml"]:
+			case acceptedMime["html"]:
 				documents = append(documents,
 					&HtmlDocument{inputFilePath: terminal.InputFilePaths[i],
+						outputFilePath: terminal.OutputFilePaths[i]})
+			case acceptedMime["xml"], acceptedMime["xhtml"]:
+				documents = append(documents,
+					&XmlDocument{inputFilePath: terminal.InputFilePaths[i],
 						outputFilePath: terminal.OutputFilePaths[i]})
 			default:
 				fmt.Printf("Грешка - тип фајла %s није подржан: %s\n", mediaType, terminal.InputFilePaths[i])
