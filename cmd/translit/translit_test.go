@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/sha256"
 	"errors"
 	"flag"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/eevan78/translit/internal/dictionary"
@@ -111,13 +113,37 @@ func TestL2CTextInputFile(t *testing.T) {
 	*dictionary.InputPathPtr = "../../test/testdata/rec_godine.txt"
 	flag.Parse()
 
+	expectedOutput, _ := filepath.Abs("../../test/testdata/rec_godine_izlaz.txt")
+
 	main()
 
 	exist := isOutputFileExist()
 	clearData()
 
 	if !exist {
-		t.Fatalf(`Translit nije napravio fajl %q`, getOutputFileName())
+		t.Fatalf(`Транслит није направио фајл %q`, getOutputFileName())
+	} else {
+		fmt.Fprintln(os.Stderr, "Пронађен!")
+	}
+
+	transliterated, err := os.Open(getOutputFileName())
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer transliterated.Close()
+	expected, err := os.Open(expectedOutput)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer expected.Close()
+
+	checksumTransliterate := checksumSHA256(transliterated)
+	checksumExpected := checksumSHA256(expected)
+
+	if strings.Compare(checksumTransliterate, checksumExpected) != 0 {
+		t.Fatalf("Садржај пресловљеног фајла се разликује од очекиваног!")
+	} else {
+		fmt.Fprintln(os.Stderr, "Садржај пресловљеног фајла је исправан")
 	}
 }
 
@@ -125,6 +151,14 @@ func clearData() {
 	terminal.InputFilenames = nil
 	terminal.InputFilePaths = nil
 	terminal.OutputFilePaths = nil
+}
+
+func checksumSHA256(f io.Reader) string {
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		log.Fatal(err)
+	}
+	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
 func getOutputFileName() string {
