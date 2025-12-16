@@ -300,11 +300,16 @@ func shouldTransliterate(n *html.Node) bool {
 
 // Traverses through the XML starting from the given xml element (node). Firstly, it transliterates text which can be mixed
 // with other inner xml elements within this node. Then, it goes through the node and recursively do the traversal.
+// CDATA section will be skipped and not transliterated.
 func traverseXmlNode(node *etree.Element) {
 	// iterates through element's Childs and transliterates only the text childs
 	// these childs are any part of the text file including new line characters, inline text fields and xml elements
 	for _, child := range node.Child {
 		if childData, ok := child.(*etree.CharData); ok {
+			// we ignore CDATA section
+			if childData.IsCData() {
+				continue
+			}
 			// if a child consists of a text transliterate it
 			line := childData.Data
 			if !allWhite(line) {
