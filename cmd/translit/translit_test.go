@@ -147,6 +147,46 @@ func TestL2CTextInputFile(t *testing.T) {
 	}
 }
 
+func TestL2CXmlInputFile(t *testing.T) {
+	*dictionary.L2cPtr = true
+	*dictionary.C2lPtr = false
+	*dictionary.InputPathPtr = "../../test/testdata/xmltest.xml"
+	flag.Parse()
+
+	expectedOutput, _ := filepath.Abs("../../test/testdata/xmltest_izlaz.xml")
+
+	main()
+
+	exist := isOutputFileExist()
+	clearData()
+
+	if !exist {
+		t.Fatalf(`Транслит није направио фајл %q`, getOutputFileName())
+	} else {
+		fmt.Fprintln(os.Stderr, "Пронађен!")
+	}
+
+	transliterated, err := os.Open(getOutputFileName())
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer transliterated.Close()
+	expected, err := os.Open(expectedOutput)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer expected.Close()
+
+	checksumTransliterate := checksumSHA256(transliterated)
+	checksumExpected := checksumSHA256(expected)
+
+	if strings.Compare(checksumTransliterate, checksumExpected) != 0 {
+		t.Fatalf("Садржај пресловљеног фајла се разликује од очекиваног!")
+	} else {
+		fmt.Fprintln(os.Stderr, "Садржај пресловљеног фајла је исправан")
+	}
+}
+
 func clearData() {
 	terminal.InputFilenames = nil
 	terminal.InputFilePaths = nil
