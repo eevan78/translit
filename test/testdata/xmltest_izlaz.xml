@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<poruka>
+	<naslov>Ево наслова тајне поруке</naslov>
+	<telo>
+		Да ли је у реду да се <bitno>тајне ствари</bitno> шифрују? Пошаљи ми свој јавни кључ. Ево мог кључа:
+		<![CDATA[
+			-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+			mQINBFYaCXIBEAC3gDgm+9MKZV4va5dhIyUQOhRePHn+KQhxIAmyroDA04EBOwkE
+			EeluM420yStLeh0chdQyYsEOzEqzzUSgs7L7fI6jDo0qwcbtKOgZ+Lf7JaVH+g6j
+			wZqkLNzKFRFZPpKTmVUv9Z6U1TU2MfqgifiGmncVT7zChz1gb78W4SkIys38BvSm
+			g62rIFvyDvKZeUCFEuHS5JkZUbuK19JQRTeDrrenLNh4n8odsfVH8qGu20lS/aKr
+			G/Rg0lKwvfHzuJM1JqWAMpnbHQ==
+			=5hsn
+			-----END PGP PUBLIC KEY BLOCK-----
+			]]>
+		<datum>18.12.2825</datum>
+	</telo>
+</poruka>
