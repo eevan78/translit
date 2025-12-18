@@ -21,6 +21,7 @@ var (
 		"html":  "text/html; charset=utf-8",
 		"xhtml": "application/xhtml+xml",
 		"xml":   "text/xml; charset=utf-8",
+		"zip":   "application/zip",
 	}
 )
 
@@ -385,6 +386,10 @@ func CreateDocuments() []Document {
 			case acceptedMime["xml"], acceptedMime["xhtml"]:
 				documents = append(documents,
 					&XmlDocument{inputFilePath: terminal.InputFilePaths[i],
+						outputFilePath: terminal.OutputFilePaths[i]})
+			case acceptedMime["zip"]:
+				documents = append(documents,
+					&ZipArchive{inputFilePath: terminal.InputFilePaths[i],
 						outputFilePath: terminal.OutputFilePaths[i]})
 			default:
 				fmt.Printf("Упозорење - тип фајла %s није подржан: %s\n", mediaType, terminal.InputFilePaths[i])
