@@ -12,6 +12,7 @@ import (
 	"github.com/cavaliergopher/grab/v3"
 	"github.com/eevan78/translit/internal/dictionary"
 	"github.com/eevan78/translit/internal/exit"
+	"github.com/gabriel-vasile/mimetype"
 )
 
 var (
@@ -21,6 +22,7 @@ var (
 	InputFilePaths  []string
 	OutputFilePaths []string
 	OutputDir       = "output"
+	TmpDir          = "tmp"
 )
 
 func OpenInputFile(filename string) (*os.File, *bufio.Reader) {
@@ -58,15 +60,31 @@ func prepareInputDirectory() {
 	for i := range InputFilenames {
 		InputFilePaths = append(InputFilePaths, filepath.Join(absPath, InputFilenames[i]))
 	}
+}
 
-	// fmt.Println("Улазни фајлови:")
-	// printFilePaths(InputFilePaths)
+func PrepareInputDirectory2(directoryPath string) (filePaths []string) {
+	inputDir, err := os.Open(directoryPath)
+	if err != nil {
+		exit.ExitWithError(err, directoryPath)
+	}
+
+	fileNames, err := inputDir.Readdirnames(0)
+	if err != nil {
+		exit.ExitWithError(err, directoryPath)
+	}
+
+	absPath, _ := filepath.Abs(directoryPath)
+	for i := range fileNames {
+		filePaths = append(filePaths, filepath.Join(absPath, fileNames[i]))
+	}
+
+	return filePaths
 }
 
 func prepareOutputDirectory() {
 	outDirName := filepath.Join(filepath.Dir(*dictionary.InputPathPtr), OutputDir)
 	if _, err := os.Stat(outDirName); errors.Is(err, os.ErrNotExist) {
-		err := os.Mkdir(outDirName, os.ModePerm)
+		err := os.MkdirAll(outDirName, os.ModePerm)
 		if err != nil {
 			exit.ExitWithError(err, outDirName)
 		}
@@ -78,38 +96,56 @@ func prepareOutputDirectory() {
 	}
 }
 
+func PrepareZipDirectories(inputFilePath string) (tempDir string, outputDir string) {
+	// directory to place all archived files has the same name as the archive
+	dirName := strings.Split(filepath.Base(inputFilePath), ".")[0]
+
+	// Create a temporary directory with a custom prefix
+	tempDir, err := os.MkdirTemp("", dirName)
+	if err != nil {
+		exit.ExitWithError(err, "Error creating temporary directory")
+	}
+
+	outputDir = OutputDir + string(os.PathSeparator) + dirName
+	outputDir, _ = filepath.Abs(outputDir)
+
+	return tempDir, outputDir
+}
+
 func prepareInputFile() {
-	var err error
-
 	if strings.HasPrefix(*dictionary.InputPathPtr, "http") {
-		if strings.HasSuffix(*dictionary.InputPathPtr, "/") {
-			err = errors.New("тренутно није дозвољено да се URL завршава са /")
-			exit.ExitWithError(err, *dictionary.InputPathPtr)
-		}
-
-		tmpDir := "tmp"
-
-		if _, err := os.Stat(tmpDir); errors.Is(err, os.ErrNotExist) {
-			err := os.Mkdir(tmpDir, os.ModePerm)
-			if err != nil {
-				exit.ExitWithError(err, tmpDir)
-			}
-		}
-
-		var response *grab.Response
-		//download file to the tmp directory
-		response, err = grab.Get(tmpDir, *dictionary.InputPathPtr)
-		if err != nil {
-			exit.ExitWithError(err, *dictionary.InputPathPtr)
-		}
-		*dictionary.InputPathPtr = response.Filename
+		prepareInputFileFromInternet()
 	}
 
 	// strip directories from the input filepath if exist
-
 	InputFilenames = append(InputFilenames, filepath.Base(*dictionary.InputPathPtr))
 	absPath, _ := filepath.Abs(*dictionary.InputPathPtr)
 	InputFilePaths = append(InputFilePaths, absPath)
+}
+
+func prepareInputFileFromInternet() {
+	var err error
+	if strings.HasSuffix(*dictionary.InputPathPtr, "/") {
+		err = errors.New("тренутно није дозвољено да се URL завршава са /")
+		exit.ExitWithError(err, *dictionary.InputPathPtr)
+	}
+
+	tmpDir := "tmp"
+
+	if _, err := os.Stat(tmpDir); errors.Is(err, os.ErrNotExist) {
+		err := os.Mkdir(tmpDir, os.ModePerm)
+		if err != nil {
+			exit.ExitWithError(err, tmpDir)
+		}
+	}
+
+	var response *grab.Response
+	//download file to the tmp directory
+	response, err = grab.Get(tmpDir, *dictionary.InputPathPtr)
+	if err != nil {
+		exit.ExitWithError(err, *dictionary.InputPathPtr)
+	}
+	*dictionary.InputPathPtr = response.Filename
 }
 
 func isDirectory(path string) (bool, error) {
@@ -173,12 +209,17 @@ func ProcessFilePaths() {
 		} else {
 			prepareInputFile()
 		}
+
 		prepareOutputDirectory()
 	}
 }
 
-func printFilePaths(filePaths []string) {
-	for i := range filePaths {
-		fmt.Println(filePaths[i])
+func DetectFileType(filePath string) (string, string) {
+	mediaType, err := mimetype.DetectFile(filePath)
+	if err != nil {
+		panic(err)
 	}
+	fmt.Println(mediaType.String(), mediaType.Extension())
+
+	return mediaType.String(), mediaType.Extension()
 }
