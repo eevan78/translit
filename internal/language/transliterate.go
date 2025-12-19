@@ -350,11 +350,15 @@ func transliterateXmlText(line string) string {
 }
 
 func Transliterate(documents []Document) []Document {
-	fmt.Println("Пресловљавање")
+	if !isStdIn() {
+		fmt.Println("Пресловљавање")
+	}
 	for i := range documents {
 		documents[i].open()
 		documents[i].transliterate()
-		fmt.Printf("Успешно: %s \nу %s\n", documents[i].getInputFilePath(), documents[i].getOuputFilePath())
+		if !isStdIn() {
+			fmt.Printf("Успешно: %s \nу %s\n", documents[i].getInputFilePath(), documents[i].getOuputFilePath())
+		}
 	}
 
 	return documents
@@ -363,7 +367,7 @@ func Transliterate(documents []Document) []Document {
 func CreateDocuments() []Document {
 	documents := []Document{}
 
-	if *dictionary.InputPathPtr == "" {
+	if isStdIn() {
 		documents = append(documents, &StdIn{})
 	} else {
 		for i := range terminal.InputFilenames {
@@ -402,4 +406,8 @@ func detectFileType(filePath string) (string, string) {
 	mediaType := strings.ToLower(mimeType.String())
 
 	return mediaType, mimeType.Extension()
+}
+
+func isStdIn() bool {
+	return *dictionary.InputPathPtr == ""
 }
