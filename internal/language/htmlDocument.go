@@ -29,3 +29,11 @@ func (document *HtmlDocument) transliterate() {
 	}
 	_ = document.fop.Writer.Flush()
 }
+
+func (document *HtmlDocument) getInputFilePath() string {
+	return document.inputFilePath
+}
+
+func (document *HtmlDocument) getOuputFilePath() string {
+	return document.outputFilePath
+}

@@ -349,10 +349,11 @@ func transliterateXmlText(line string) string {
 }
 
 func Transliterate(documents []Document) []Document {
-
+	fmt.Println("Пресловљавање")
 	for i := range documents {
 		documents[i].open()
 		documents[i].transliterate()
+		fmt.Printf("Успешно: %s \nу %s\n", documents[i].getInputFilePath(), documents[i].getOuputFilePath())
 	}
 
 	return documents

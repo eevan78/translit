@@ -75,3 +75,11 @@ loop:
 		}
 	}
 }
+
+func (document *StdIn) getInputFilePath() string {
+	return ""
+}
+
+func (document *StdIn) getOuputFilePath() string {
+	return ""
+}

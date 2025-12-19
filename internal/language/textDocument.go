@@ -76,3 +76,11 @@ loop:
 		}
 	}
 }
+
+func (document *TextDocument) getInputFilePath() string {
+	return document.inputFilePath
+}
+
+func (document *TextDocument) getOuputFilePath() string {
+	return document.outputFilePath
+}
