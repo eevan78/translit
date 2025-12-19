@@ -6,21 +6,21 @@ import (
 )
 
 type FileOperator struct {
-	inputFile  *os.File
-	outputFile *os.File
+	InputFile  *os.File
+	OutputFile *os.File
 	Reader     *bufio.Reader
 	Writer     *bufio.Writer
 }
 
 func (fop *FileOperator) Open(filePath string) {
-	fop.inputFile, fop.Reader = OpenInputFile(filePath)
+	fop.InputFile, fop.Reader = OpenInputFile(filePath)
 }
 
 func (fop *FileOperator) Create(filePath string) {
-	fop.outputFile, fop.Writer = CreateOutputFile(filePath)
+	fop.OutputFile, fop.Writer = CreateOutputFile(filePath)
 }
 
 func (fop *FileOperator) Close() {
-	fop.inputFile.Close()
-	fop.outputFile.Close()
+	fop.InputFile.Close()
+	fop.OutputFile.Close()
 }

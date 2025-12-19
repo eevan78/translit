@@ -29,3 +29,11 @@ func (document *XmlDocument) transliterate() {
 
 	_ = document.fop.Writer.Flush()
 }
+
+func (document *XmlDocument) getInputFilePath() string {
+	return document.inputFilePath
+}
+
+func (document *XmlDocument) getOuputFilePath() string {
+	return document.outputFilePath
+}

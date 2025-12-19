@@ -59,8 +59,8 @@ func prepareInputDirectory() {
 		InputFilePaths = append(InputFilePaths, filepath.Join(absPath, InputFilenames[i]))
 	}
 
-	fmt.Println("Улазни фајлови:")
-	printFilePaths(InputFilePaths)
+	// fmt.Println("Улазни фајлови:")
+	// printFilePaths(InputFilePaths)
 }
 
 func prepareOutputDirectory() {
@@ -76,13 +76,6 @@ func prepareOutputDirectory() {
 	for i := range InputFilenames {
 		OutputFilePaths = append(OutputFilePaths, filepath.Join(absPath, InputFilenames[i]))
 	}
-
-	if len(OutputFilePaths) > 1 {
-		fmt.Println("Излазни фајлови:")
-	} else {
-		fmt.Println("Излазни фајл:")
-	}
-	printFilePaths(OutputFilePaths)
 }
 
 func prepareInputFile() {
@@ -117,9 +110,6 @@ func prepareInputFile() {
 	InputFilenames = append(InputFilenames, filepath.Base(*dictionary.InputPathPtr))
 	absPath, _ := filepath.Abs(*dictionary.InputPathPtr)
 	InputFilePaths = append(InputFilePaths, absPath)
-
-	fmt.Println("Улазни фајл:")
-	printFilePaths(InputFilePaths)
 }
 
 func isDirectory(path string) (bool, error) {
