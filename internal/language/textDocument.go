@@ -64,7 +64,7 @@ loop:
 			outl := strings.Join(words, " ")
 			outl += "\n"
 			if _, err = document.fop.Writer.WriteString(outl); err != nil {
-				exit.ExitWithError(err)
+				exit.ExitWithError(err, document.getInputFilePath())
 			}
 			_ = document.fop.Writer.Flush()
 
@@ -72,7 +72,7 @@ loop:
 			break loop
 
 		default:
-			exit.ExitWithError(err)
+			exit.ExitWithError(err, document.getInputFilePath())
 		}
 	}
 }

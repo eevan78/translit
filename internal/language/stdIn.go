@@ -63,7 +63,7 @@ loop:
 			outl := strings.Join(words, " ")
 			outl += "\n"
 			if _, err = document.writer.WriteString(outl); err != nil {
-				exit.ExitWithError(err)
+				exit.ExitWithError(err, "стандардним улазом")
 			}
 			_ = document.writer.Flush()
 
@@ -71,7 +71,7 @@ loop:
 			break loop
 
 		default:
-			exit.ExitWithError(err)
+			exit.ExitWithError(err, "стандардним улазом")
 		}
 	}
 }
