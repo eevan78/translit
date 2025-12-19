@@ -2,6 +2,7 @@ package language
 
 import (
 	"github.com/beevik/etree"
+	"github.com/eevan78/translit/internal/exit"
 	"github.com/eevan78/translit/internal/terminal"
 )
 
@@ -19,10 +20,10 @@ func (document *XmlDocument) open() {
 
 func (document *XmlDocument) transliterate() {
 	xmlDocument := etree.NewDocument()
-	// do not consider CDATA section as XML emelent so we can differentiate them during transliteration.
+	// do not consider CDATA section as XML element so we can differentiate them during transliteration.
 	xmlDocument.ReadSettings = etree.ReadSettings{PreserveCData: true}
 	if _, err := xmlDocument.ReadFrom(document.fop.Reader); err != nil {
-		panic(err)
+		exit.ExitWithError(err, document.getInputFilePath())
 	}
 	traverseXmlNode(&xmlDocument.Element)
 	xmlDocument.WriteTo(document.fop.Writer)

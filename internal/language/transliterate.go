@@ -9,6 +9,7 @@ import (
 
 	"github.com/beevik/etree"
 	"github.com/eevan78/translit/internal/dictionary"
+	"github.com/eevan78/translit/internal/exit"
 	"github.com/eevan78/translit/internal/terminal"
 	"github.com/gabriel-vasile/mimetype"
 	"golang.org/x/net/html"
@@ -382,7 +383,7 @@ func CreateDocuments() []Document {
 					&XmlDocument{inputFilePath: terminal.InputFilePaths[i],
 						outputFilePath: terminal.OutputFilePaths[i]})
 			default:
-				fmt.Printf("Грешка - тип фајла %s није подржан: %s\n", mediaType, terminal.InputFilePaths[i])
+				fmt.Printf("Упозорење - тип фајла %s није подржан: %s\n", mediaType, terminal.InputFilePaths[i])
 
 			}
 		}
@@ -394,7 +395,7 @@ func CreateDocuments() []Document {
 func detectFileType(filePath string) (string, string) {
 	mimeType, err := mimetype.DetectFile(filePath)
 	if err != nil {
-		panic(err)
+		exit.ExitWithError(err, filePath)
 	}
 
 	// converting to lower case not to worry about the case of retrieved string value

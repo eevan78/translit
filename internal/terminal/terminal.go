@@ -26,7 +26,7 @@ var (
 func OpenInputFile(filename string) (*os.File, *bufio.Reader) {
 	inputFile, err := os.Open(filename)
 	if err != nil {
-		panic(err)
+		exit.ExitWithError(err, filename)
 	}
 
 	rdr = bufio.NewReader(inputFile)
@@ -36,7 +36,7 @@ func OpenInputFile(filename string) (*os.File, *bufio.Reader) {
 func CreateOutputFile(filename string) (*os.File, *bufio.Writer) {
 	outputFile, err := os.Create(filename)
 	if err != nil {
-		panic(err)
+		exit.ExitWithError(err, filename)
 	}
 
 	out = bufio.NewWriter(outputFile)
@@ -46,12 +46,12 @@ func CreateOutputFile(filename string) (*os.File, *bufio.Writer) {
 func prepareInputDirectory() {
 	inputDir, err := os.Open(*dictionary.InputPathPtr)
 	if err != nil {
-		panic(err)
+		exit.ExitWithError(err, *dictionary.InputPathPtr)
 	}
 
 	InputFilenames, err = inputDir.Readdirnames(0)
 	if err != nil {
-		panic(err)
+		exit.ExitWithError(err, *dictionary.InputPathPtr)
 	}
 
 	absPath, _ := filepath.Abs(*dictionary.InputPathPtr)
@@ -68,7 +68,7 @@ func prepareOutputDirectory() {
 	if _, err := os.Stat(outDirName); errors.Is(err, os.ErrNotExist) {
 		err := os.Mkdir(outDirName, os.ModePerm)
 		if err != nil {
-			panic(err)
+			exit.ExitWithError(err, outDirName)
 		}
 	}
 
@@ -84,7 +84,7 @@ func prepareInputFile() {
 	if strings.HasPrefix(*dictionary.InputPathPtr, "http") {
 		if strings.HasSuffix(*dictionary.InputPathPtr, "/") {
 			err = errors.New("тренутно није дозвољено да се URL завршава са /")
-			exit.ExitWithError(err)
+			exit.ExitWithError(err, *dictionary.InputPathPtr)
 		}
 
 		tmpDir := "tmp"
@@ -92,7 +92,7 @@ func prepareInputFile() {
 		if _, err := os.Stat(tmpDir); errors.Is(err, os.ErrNotExist) {
 			err := os.Mkdir(tmpDir, os.ModePerm)
 			if err != nil {
-				panic(err)
+				exit.ExitWithError(err, tmpDir)
 			}
 		}
 
@@ -100,7 +100,7 @@ func prepareInputFile() {
 		//download file to the tmp directory
 		response, err = grab.Get(tmpDir, *dictionary.InputPathPtr)
 		if err != nil {
-			exit.ExitWithError(err)
+			exit.ExitWithError(err, *dictionary.InputPathPtr)
 		}
 		*dictionary.InputPathPtr = response.Filename
 	}
@@ -163,9 +163,9 @@ func CheckFlags() {
 
 func ProcessFilePaths() {
 	if *dictionary.InputPathPtr != "" {
-		isDirectory, errors := isDirectory(*dictionary.InputPathPtr)
-		if errors != nil {
-			panic(errors)
+		isDirectory, err := isDirectory(*dictionary.InputPathPtr)
+		if err != nil {
+			exit.ExitWithError(err, *dictionary.InputPathPtr)
 		}
 
 		if isDirectory {

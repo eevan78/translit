@@ -21,11 +21,11 @@ func (document *HtmlDocument) open() {
 func (document *HtmlDocument) transliterate() {
 	node, err := html.Parse(document.fop.Reader)
 	if err != nil {
-		exit.ExitWithError(err)
+		exit.ExitWithError(err, document.getInputFilePath())
 	}
 	traverseHtmlNode(node)
 	if err := html.Render(document.fop.Writer, node); err != nil {
-		exit.ExitWithError(err)
+		exit.ExitWithError(err, document.getInputFilePath())
 	}
 	_ = document.fop.Writer.Flush()
 }
