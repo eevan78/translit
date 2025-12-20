@@ -76,9 +76,11 @@ func TestL2CHtmlInputFileFromInternet(t *testing.T) {
 	main()
 
 	exist := isOutputFileExist()
-	clearData()
+	defer cleanTmp()
 	if !exist {
-		t.Fatalf(`Translit nije napravio fajl %q`, getOutputFileName())
+		t.Fatalf(`Транслит није направио фајл %q`, getOutputFileName())
+	} else {
+		fmt.Fprintln(os.Stderr, "Пронађен!")
 	}
 }
 
@@ -117,34 +119,7 @@ func TestL2CTextInputFile(t *testing.T) {
 
 	main()
 
-	exist := isOutputFileExist()
-	clearData()
-
-	if !exist {
-		t.Fatalf(`Транслит није направио фајл %q`, getOutputFileName())
-	} else {
-		fmt.Fprintln(os.Stderr, "Пронађен!")
-	}
-
-	transliterated, err := os.Open(getOutputFileName())
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer transliterated.Close()
-	expected, err := os.Open(expectedOutput)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer expected.Close()
-
-	checksumTransliterate := checksumSHA256(transliterated)
-	checksumExpected := checksumSHA256(expected)
-
-	if strings.Compare(checksumTransliterate, checksumExpected) != 0 {
-		t.Fatalf("Садржај пресловљеног фајла се разликује од очекиваног!")
-	} else {
-		fmt.Fprintln(os.Stderr, "Садржај пресловљеног фајла је исправан")
-	}
+	compareExpected(t, expectedOutput)
 }
 
 func TestL2CXmlInputFile(t *testing.T) {
@@ -157,8 +132,12 @@ func TestL2CXmlInputFile(t *testing.T) {
 
 	main()
 
+	compareExpected(t, expectedOutput)
+}
+
+func compareExpected(t *testing.T, expectedOutput string) {
 	exist := isOutputFileExist()
-	clearData()
+	defer cleanOutput()
 
 	if !exist {
 		t.Fatalf(`Транслит није направио фајл %q`, getOutputFileName())
@@ -191,6 +170,27 @@ func clearData() {
 	terminal.InputFilenames = nil
 	terminal.InputFilePaths = nil
 	terminal.OutputFilePaths = nil
+}
+
+func cleanOutput() {
+	clearData()
+	outDirPath := filepath.Join(filepath.Dir(*dictionary.InputPathPtr), terminal.OutputDir)
+	absDirectoryPath, _ := filepath.Abs(outDirPath)
+	if err := os.RemoveAll(absDirectoryPath); err != nil {
+		fmt.Fprintf(os.Stderr, "Није успело брисање излазног директоријума: %v\n", err)
+	} else {
+		fmt.Fprintln(os.Stderr, "Обрисан је излазни директоријум")
+	}
+}
+
+func cleanTmp() {
+	clearData()
+	absDirectoryPath, _ := filepath.Abs("tmp")
+	if err := os.RemoveAll(absDirectoryPath); err != nil {
+		fmt.Fprintf(os.Stderr, "Није успело брисање привременог директоријума: %v\n", err)
+	} else {
+		fmt.Fprintln(os.Stderr, "Обрисан је привремени директоријум")
+	}
 }
 
 func checksumSHA256(f io.Reader) string {
