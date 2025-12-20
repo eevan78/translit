@@ -83,3 +83,6 @@ func (document *StdIn) getInputFilePath() string {
 func (document *StdIn) getOuputFilePath() string {
 	return ""
 }
+
+func (document *StdIn) finalize() {
+}

@@ -38,3 +38,6 @@ func (document *XmlDocument) getInputFilePath() string {
 func (document *XmlDocument) getOuputFilePath() string {
 	return document.outputFilePath
 }
+
+func (document *XmlDocument) finalize() {
+}
