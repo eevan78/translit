@@ -401,6 +401,38 @@ func CreateDocuments() []Document {
 	return documents
 }
 
+func CreateZipDocuments(inputFilePaths []string, outputFilePaths []string) []Document {
+	documents := []Document{}
+
+	for i := range inputFilePaths {
+		mediaType, _ := detectFileType(inputFilePaths[i])
+
+		switch mediaType {
+		case acceptedMime["text"]:
+			documents = append(documents,
+				&TextDocument{inputFilePath: inputFilePaths[i],
+					outputFilePath: outputFilePaths[i]})
+		case acceptedMime["html"]:
+			documents = append(documents,
+				&HtmlDocument{inputFilePath: inputFilePaths[i],
+					outputFilePath: outputFilePaths[i]})
+		case acceptedMime["xml"], acceptedMime["xhtml"]:
+			documents = append(documents,
+				&XmlDocument{inputFilePath: inputFilePaths[i],
+					outputFilePath: outputFilePaths[i]})
+		case acceptedMime["zip"]:
+			documents = append(documents,
+				&ZipArchive{inputFilePath: inputFilePaths[i],
+					outputFilePath: outputFilePaths[i]})
+		default:
+			fmt.Printf("Упозорење - тип фајла %s није подржан: %s\n", mediaType, terminal.InputFilePaths[i])
+
+		}
+	}
+
+	return documents
+}
+
 func detectFileType(filePath string) (string, string) {
 	mimeType, err := mimetype.DetectFile(filePath)
 	if err != nil {

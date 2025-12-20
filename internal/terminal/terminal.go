@@ -62,7 +62,7 @@ func prepareInputDirectory() {
 	}
 }
 
-func PrepareInputDirectory2(directoryPath string) (filePaths []string) {
+func PrepareInputDirectoryForZip(directoryPath string) (filePaths []string) {
 	inputDir, err := os.Open(directoryPath)
 	if err != nil {
 		exit.ExitWithError(err, directoryPath)
@@ -96,6 +96,24 @@ func prepareOutputDirectory() {
 	}
 }
 
+func PrepareOutputDirectoryForZip(inputDirectoryPath string, inputFilePaths []string, outputDirectoryPath string) (outputFilePaths []string) {
+	if _, err := os.Stat(outputDirectoryPath); errors.Is(err, os.ErrNotExist) {
+		err := os.MkdirAll(outputDirectoryPath, os.ModePerm)
+		if err != nil {
+			exit.ExitWithError(err, outputDirectoryPath)
+		}
+	}
+
+	absPath, _ := filepath.Abs(outputDirectoryPath)
+	var inputFileNames []string
+	for i := range inputFilePaths {
+		inputFileNames = append(inputFileNames, filepath.Base(inputFilePaths[i]))
+		outputFilePaths = append(outputFilePaths, filepath.Join(absPath, inputFileNames[i]))
+	}
+
+	return outputFilePaths
+}
+
 func PrepareZipDirectories(inputFilePath string) (tempDir string, outputDir string) {
 	// directory to place all archived files has the same name as the archive
 	dirName := strings.Split(filepath.Base(inputFilePath), ".")[0]
@@ -106,8 +124,10 @@ func PrepareZipDirectories(inputFilePath string) (tempDir string, outputDir stri
 		exit.ExitWithError(err, "Error creating temporary directory")
 	}
 
-	outputDir = OutputDir + string(os.PathSeparator) + dirName
-	outputDir, _ = filepath.Abs(outputDir)
+	outputDir, err = os.MkdirTemp("", "output")
+	if err != nil {
+		exit.ExitWithError(err, "Error creating temporary directory")
+	}
 
 	return tempDir, outputDir
 }
