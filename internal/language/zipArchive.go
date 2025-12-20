@@ -1,8 +1,6 @@
 package language
 
 import (
-	"fmt"
-
 	"github.com/eevan78/translit/internal/archive"
 	"github.com/eevan78/translit/internal/terminal"
 )
@@ -10,20 +8,19 @@ import (
 type ZipArchive struct {
 	inputFilePath  string
 	outputFilePath string
-	fop            *terminal.FileOperator
-	inputFilePaths []string
+	documents      []Document
 }
 
 func (document *ZipArchive) open() {
-	tempDir := unzip(document.inputFilePath)
-	filePaths := terminal.PrepareInputDirectory2(tempDir)
-
-	fmt.Println(filePaths)
-
+	unzipDir, translitDir := terminal.PrepareZipDirectories(document.inputFilePath)
+	archive.Unzip(document.inputFilePath, unzipDir)
+	inputFilePaths := terminal.PrepareInputDirectoryForZip(unzipDir)
+	outputFilePaths := terminal.PrepareOutputDirectoryForZip(unzipDir, inputFilePaths, translitDir)
+	document.documents = CreateZipDocuments(inputFilePaths, outputFilePaths)
 }
 
 func (document *ZipArchive) transliterate() {
-
+	Transliterate(document.documents)
 }
 
 func (document *ZipArchive) getInputFilePath() string {
@@ -32,10 +29,4 @@ func (document *ZipArchive) getInputFilePath() string {
 
 func (document *ZipArchive) getOuputFilePath() string {
 	return document.outputFilePath
-}
-
-func unzip(inputFilePath string) (tempDir string) {
-	tempDir, _ = terminal.PrepareZipDirectories(inputFilePath)
-	archive.Unzip(inputFilePath, tempDir)
-	return tempDir
 }
