@@ -5,4 +5,5 @@ type Document interface {
 	transliterate()
 	getInputFilePath() string
 	getOuputFilePath() string
+	finalize()
 }

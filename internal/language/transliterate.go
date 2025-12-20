@@ -357,6 +357,7 @@ func Transliterate(documents []Document) []Document {
 	for i := range documents {
 		documents[i].open()
 		documents[i].transliterate()
+		documents[i].finalize()
 		if !isStdIn() {
 			fmt.Printf("Успешно: %s \nу %s\n", documents[i].getInputFilePath(), documents[i].getOuputFilePath())
 		}

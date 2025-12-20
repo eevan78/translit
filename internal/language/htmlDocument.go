@@ -37,3 +37,6 @@ func (document *HtmlDocument) getInputFilePath() string {
 func (document *HtmlDocument) getOuputFilePath() string {
 	return document.outputFilePath
 }
+
+func (document *HtmlDocument) finalize() {
+}

@@ -84,3 +84,6 @@ func (document *TextDocument) getInputFilePath() string {
 func (document *TextDocument) getOuputFilePath() string {
 	return document.outputFilePath
 }
+
+func (document *TextDocument) finalize() {
+}
