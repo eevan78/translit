@@ -1,6 +1,8 @@
 package language
 
 import (
+	"fmt"
+
 	"github.com/beevik/etree"
 	"github.com/eevan78/translit/internal/exit"
 	"github.com/eevan78/translit/internal/terminal"
@@ -40,4 +42,5 @@ func (document *XmlDocument) getOuputFilePath() string {
 }
 
 func (document *XmlDocument) finalize() {
+	fmt.Printf("Успешно: %s \nу %s\n", document.inputFilePath, document.outputFilePath)
 }

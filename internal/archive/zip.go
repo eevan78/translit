@@ -16,7 +16,7 @@ func Zip(source, target string) error {
 	}
 	defer f.Close()
 
-	fmt.Println(filepath.Abs(target))
+	fmt.Println("Архивирање\nу", target)
 
 	writer := zip.NewWriter(f)
 	defer writer.Close()

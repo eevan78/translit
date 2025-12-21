@@ -358,9 +358,6 @@ func Transliterate(documents []Document) []Document {
 		documents[i].open()
 		documents[i].transliterate()
 		documents[i].finalize()
-		if !isStdIn() {
-			fmt.Printf("Успешно: %s \nу %s\n", documents[i].getInputFilePath(), documents[i].getOuputFilePath())
-		}
 	}
 
 	return documents
@@ -426,7 +423,7 @@ func CreateZipDocuments(inputFilePaths []string, outputFilePaths []string) []Doc
 				&ZipArchive{inputFilePath: inputFilePaths[i],
 					outputFilePath: outputFilePaths[i]})
 		default:
-			fmt.Printf("Упозорење - тип фајла %s није подржан: %s\n", mediaType, terminal.InputFilePaths[i])
+			fmt.Printf("Упозорење - тип фајла %s није подржан: %s\n", mediaType, inputFilePaths[i])
 
 		}
 	}

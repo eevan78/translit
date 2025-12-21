@@ -1,6 +1,8 @@
 package language
 
 import (
+	"fmt"
+
 	"github.com/eevan78/translit/internal/exit"
 	"github.com/eevan78/translit/internal/terminal"
 	"golang.org/x/net/html"
@@ -39,4 +41,5 @@ func (document *HtmlDocument) getOuputFilePath() string {
 }
 
 func (document *HtmlDocument) finalize() {
+	fmt.Printf("Успешно: %s \nу %s\n", document.inputFilePath, document.outputFilePath)
 }
