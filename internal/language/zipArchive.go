@@ -1,6 +1,9 @@
 package language
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/eevan78/translit/internal/archive"
 	"github.com/eevan78/translit/internal/exit"
 	"github.com/eevan78/translit/internal/terminal"
@@ -35,7 +38,15 @@ func (document *ZipArchive) getOuputFilePath() string {
 }
 
 func (document *ZipArchive) finalize() {
-	if err := archive.Zip(document.translitDir, document.outputFilePath); err != nil {
-		exit.ExitWithError(err, document.inputFilePath)
+	inputDir := document.translitDir
+	transliteratedFiles, _ := os.ReadDir(inputDir)
+
+	if len(transliteratedFiles) > 0 {
+		if err := archive.Zip(inputDir, document.outputFilePath); err != nil {
+			exit.ExitWithError(err, document.inputFilePath)
+		}
+		fmt.Printf("Успешно: %s \nу %s\n", document.inputFilePath, document.outputFilePath)
+	} else {
+		fmt.Println("Неуспешно: ниједан фајл у улазној zip архиви није успешно пресловљен.", document.inputFilePath)
 	}
 }
