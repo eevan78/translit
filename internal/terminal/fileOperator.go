@@ -2,6 +2,7 @@ package terminal
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 )
 
@@ -21,6 +22,15 @@ func (fop *FileOperator) Create(filePath string) {
 }
 
 func (fop *FileOperator) Close() {
-	fop.InputFile.Close()
-	fop.OutputFile.Close()
+	err := fop.InputFile.Close()
+	if err != nil {
+		// could be ommited beacuse it is safe for us to call close twice, but printing for developers
+		fmt.Println("Фајл је већ затворен:", fop.InputFile)
+	}
+
+	err = fop.OutputFile.Close()
+	if err != nil {
+		// could be ommited beacuse it is safe for us to call close twice, but printing for developers
+		fmt.Println("Фајл је већ затворен:", fop.OutputFile)
+	}
 }

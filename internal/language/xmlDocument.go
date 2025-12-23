@@ -43,4 +43,5 @@ func (document *XmlDocument) getOuputFilePath() string {
 
 func (document *XmlDocument) finalize() {
 	fmt.Printf("Успешно: %s \nу %s\n", document.inputFilePath, document.outputFilePath)
+	document.fop.Close()
 }
