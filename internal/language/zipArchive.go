@@ -20,9 +20,9 @@ type ZipArchive struct {
 func (document *ZipArchive) open() {
 	document.unzipDir, document.translitDir = terminal.PrepareZipDirectories(document.inputFilePath)
 	archive.Unzip(document.inputFilePath, document.unzipDir)
-	inputFilePaths := terminal.PrepareInputDirectoryForZip(document.unzipDir)
-	outputFilePaths := terminal.PrepareOutputDirectoryForZip(document.unzipDir, inputFilePaths, document.translitDir)
-	document.innerDocuments = CreateZipDocuments(inputFilePaths, outputFilePaths)
+	inputFilePaths := terminal.PrepareInputDirectory(document.unzipDir)
+	outputFilePaths := terminal.PrepareOutputDirectory(document.unzipDir, inputFilePaths, document.translitDir)
+	document.innerDocuments = CreateDocuments(inputFilePaths, outputFilePaths)
 }
 
 func (document *ZipArchive) transliterate() {

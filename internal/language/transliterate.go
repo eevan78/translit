@@ -207,7 +207,7 @@ func traverseHtmlNode(n *html.Node) {
 		if n.Data == "html" {
 			namespace := ""
 			notexist := true
-			if *dictionary.L2cPtr {
+			if *terminal.L2cPtr {
 				for i, attrib := range n.Attr {
 					if attrib.Key == "lang" || attrib.Key == "xml:lang" {
 						n.Attr[i].Val = "sr-Cyrl-t-sr-Latn"
@@ -220,7 +220,7 @@ func traverseHtmlNode(n *html.Node) {
 				if notexist {
 					n.Attr = append(n.Attr, html.Attribute{Namespace: namespace, Key: "lang", Val: "sr-Cyrl-t-sr-Latn"})
 				}
-			} else if *dictionary.C2lPtr {
+			} else if *terminal.C2lPtr {
 				for i, attrib := range n.Attr {
 					if attrib.Key == "lang" || attrib.Key == "xml:lang" {
 						n.Attr[i].Val = "sr-Latn-t-sr-Cyrl"
@@ -243,7 +243,7 @@ func traverseHtmlNode(n *html.Node) {
 			words := strings.Fields(n.Data)
 
 			for w := range words {
-				if *dictionary.L2cPtr {
+				if *terminal.L2cPtr {
 					index := transliterationIndexOfWordStartsWith(strings.ToLower(words[w]), dictionary.WholeForeignWords, "-")
 					if index >= 0 {
 						words[w] = string(words[w][:index]) + l2c(string(words[w][index:]))
@@ -280,7 +280,7 @@ func shouldTransliterate(n *html.Node) bool {
 
 	attr := ""
 
-	if *dictionary.L2cPtr {
+	if *terminal.L2cPtr {
 		attr = "sr-Latn"
 	} else { // *c2lPtr
 		attr = "sr-Cyrl"
@@ -331,7 +331,7 @@ func transliterateXmlText(line string) string {
 	words := strings.Fields(line)
 
 	for word := range words {
-		if *dictionary.L2cPtr {
+		if *terminal.L2cPtr {
 			index := transliterationIndexOfWordStartsWith(strings.ToLower(words[word]), dictionary.WholeForeignWords, "-")
 			if index >= 0 {
 				words[word] = string(words[word][:index]) + l2c(string(words[word][index:]))
@@ -363,68 +363,36 @@ func Transliterate(documents []Document) []Document {
 	return documents
 }
 
-func CreateDocuments() []Document {
+func CreateDocuments(inputFilePaths []string, outputFilePaths []string) []Document {
 	documents := []Document{}
 
 	if isStdIn() {
 		documents = append(documents, &StdIn{})
 	} else {
-		for i := range terminal.InputFilenames {
-			mediaType, _ := detectFileType(terminal.InputFilePaths[i])
+		for i := range inputFilePaths {
+			mediaType, _ := detectFileType(inputFilePaths[i])
 
 			switch mediaType {
 			case acceptedMime["text"]:
 				documents = append(documents,
-					&TextDocument{inputFilePath: terminal.InputFilePaths[i],
-						outputFilePath: terminal.OutputFilePaths[i]})
+					&TextDocument{inputFilePath: inputFilePaths[i],
+						outputFilePath: outputFilePaths[i]})
 			case acceptedMime["html"]:
 				documents = append(documents,
-					&HtmlDocument{inputFilePath: terminal.InputFilePaths[i],
-						outputFilePath: terminal.OutputFilePaths[i]})
+					&HtmlDocument{inputFilePath: inputFilePaths[i],
+						outputFilePath: outputFilePaths[i]})
 			case acceptedMime["xml"], acceptedMime["xhtml"]:
 				documents = append(documents,
-					&XmlDocument{inputFilePath: terminal.InputFilePaths[i],
-						outputFilePath: terminal.OutputFilePaths[i]})
+					&XmlDocument{inputFilePath: inputFilePaths[i],
+						outputFilePath: outputFilePaths[i]})
 			case acceptedMime["zip"]:
 				documents = append(documents,
-					&ZipArchive{inputFilePath: terminal.InputFilePaths[i],
-						outputFilePath: terminal.OutputFilePaths[i]})
+					&ZipArchive{inputFilePath: inputFilePaths[i],
+						outputFilePath: outputFilePaths[i]})
 			default:
-				fmt.Printf("Упозорење - тип фајла %s није подржан: %s\n", mediaType, terminal.InputFilePaths[i])
+				fmt.Printf("Упозорење - тип фајла %s није подржан: %s\n", mediaType, inputFilePaths[i])
 
 			}
-		}
-	}
-
-	return documents
-}
-
-func CreateZipDocuments(inputFilePaths []string, outputFilePaths []string) []Document {
-	documents := []Document{}
-
-	for i := range inputFilePaths {
-		mediaType, _ := detectFileType(inputFilePaths[i])
-
-		switch mediaType {
-		case acceptedMime["text"]:
-			documents = append(documents,
-				&TextDocument{inputFilePath: inputFilePaths[i],
-					outputFilePath: outputFilePaths[i]})
-		case acceptedMime["html"]:
-			documents = append(documents,
-				&HtmlDocument{inputFilePath: inputFilePaths[i],
-					outputFilePath: outputFilePaths[i]})
-		case acceptedMime["xml"], acceptedMime["xhtml"]:
-			documents = append(documents,
-				&XmlDocument{inputFilePath: inputFilePaths[i],
-					outputFilePath: outputFilePaths[i]})
-		case acceptedMime["zip"]:
-			documents = append(documents,
-				&ZipArchive{inputFilePath: inputFilePaths[i],
-					outputFilePath: outputFilePaths[i]})
-		default:
-			fmt.Printf("Упозорење - тип фајла %s није подржан: %s\n", mediaType, inputFilePaths[i])
-
 		}
 	}
 
@@ -444,5 +412,5 @@ func detectFileType(filePath string) (string, string) {
 }
 
 func isStdIn() bool {
-	return *dictionary.InputPathPtr == ""
+	return *terminal.InputPathPtr == ""
 }

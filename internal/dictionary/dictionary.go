@@ -1,7 +1,6 @@
 package dictionary
 
 import (
-	"flag"
 	"regexp"
 	"strings"
 
@@ -16,16 +15,6 @@ var (
 	Prefmap     = strings.NewReplacer("(", "(", "'", "’", "“", "„", "”", "„", "\"", "„", "‘", "’", "…", "…")
 	Suffmap     = strings.NewReplacer(")", ")", "'", "’", "“", "”", "\"", "”", "‘", "’", "…", "…", "!", "!", ",", ",", "?", "?", ".", ".")
 	Fixdigraphs = regexp.MustCompile(`\p{Lu}*(Dž|Nj|Lj)\p{Lu}+(Dž|Nj|Lj)?\p{Lu}*`)
-
-	ConfigVersion  string
-	ProgramVersion = "0.4.0"
-
-	L2cPtr       = flag.Bool("l2c", false, "`Смер` пресловљавања је латиница у ћирилицу")
-	C2lPtr       = flag.Bool("c2l", false, "`Смер` пресловљавања је ћирилица у латиницу")
-	HtmlPtr      = flag.Bool("html", false, "`Формат` улаза је (X)HTML")
-	TextPtr      = flag.Bool("text", false, "`Формат` улаза је прости текст")
-	ConfigPtr    = flag.Bool("c", false, "Користи се конфигурација")
-	InputPathPtr = flag.String("i", "", "Путања улазног фајла или директоријума")
 
 	Tbl = trie.BuildFromMap(map[string]string{
 		"A":   "А",

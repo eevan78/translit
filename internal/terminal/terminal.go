@@ -4,25 +4,23 @@ import (
 	"bufio"
 	"errors"
 	"flag"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/cavaliergopher/grab/v3"
-	"github.com/eevan78/translit/internal/dictionary"
 	"github.com/eevan78/translit/internal/exit"
-	"github.com/gabriel-vasile/mimetype"
 )
 
 var (
-	rdr             = bufio.NewReader(os.Stdin)
-	out             = bufio.NewWriter(os.Stdout)
-	InputFilenames  []string
-	InputFilePaths  []string
-	OutputFilePaths []string
-	OutputDir       = "output"
-	TmpDir          = "tmp"
+	L2cPtr       = flag.Bool("l2c", false, "`Смер` пресловљавања је латиница у ћирилицу")
+	C2lPtr       = flag.Bool("c2l", false, "`Смер` пресловљавања је ћирилица у латиницу")
+	HtmlPtr      = flag.Bool("html", false, "`Формат` улаза је (X)HTML")
+	TextPtr      = flag.Bool("text", false, "`Формат` улаза је прости текст")
+	ConfigPtr    = flag.Bool("c", false, "Користи се конфигурација")
+	InputPathPtr = flag.String("i", "", "Путања улазног фајла или директоријума")
+
+	OutputDir = "output"
 )
 
 func OpenInputFile(filename string) (*os.File, *bufio.Reader) {
@@ -31,7 +29,7 @@ func OpenInputFile(filename string) (*os.File, *bufio.Reader) {
 		exit.ExitWithError(err, filename)
 	}
 
-	rdr = bufio.NewReader(inputFile)
+	rdr := bufio.NewReader(inputFile)
 	return inputFile, rdr
 }
 
@@ -41,62 +39,30 @@ func CreateOutputFile(filename string) (*os.File, *bufio.Writer) {
 		exit.ExitWithError(err, filename)
 	}
 
-	out = bufio.NewWriter(outputFile)
+	out := bufio.NewWriter(outputFile)
 	return outputFile, out
 }
 
-func prepareInputDirectory() {
-	inputDir, err := os.Open(*dictionary.InputPathPtr)
+func PrepareInputDirectory(inputDirectoryPath string) (inputFilePaths []string) {
+	inputDir, err := os.Open(inputDirectoryPath)
 	if err != nil {
-		exit.ExitWithError(err, *dictionary.InputPathPtr)
+		exit.ExitWithError(err, inputDirectoryPath)
 	}
 
-	InputFilenames, err = inputDir.Readdirnames(0)
+	inputFileNames, err := inputDir.Readdirnames(0)
 	if err != nil {
-		exit.ExitWithError(err, *dictionary.InputPathPtr)
+		exit.ExitWithError(err, inputDirectoryPath)
 	}
 
-	absPath, _ := filepath.Abs(*dictionary.InputPathPtr)
-	for i := range InputFilenames {
-		InputFilePaths = append(InputFilePaths, filepath.Join(absPath, InputFilenames[i]))
+	absPath, _ := filepath.Abs(inputDirectoryPath)
+	for i := range inputFileNames {
+		inputFilePaths = append(inputFilePaths, filepath.Join(absPath, inputFileNames[i]))
 	}
+
+	return inputFilePaths
 }
 
-func PrepareInputDirectoryForZip(directoryPath string) (filePaths []string) {
-	inputDir, err := os.Open(directoryPath)
-	if err != nil {
-		exit.ExitWithError(err, directoryPath)
-	}
-
-	fileNames, err := inputDir.Readdirnames(0)
-	if err != nil {
-		exit.ExitWithError(err, directoryPath)
-	}
-
-	absPath, _ := filepath.Abs(directoryPath)
-	for i := range fileNames {
-		filePaths = append(filePaths, filepath.Join(absPath, fileNames[i]))
-	}
-
-	return filePaths
-}
-
-func prepareOutputDirectory() {
-	outDirName := filepath.Join(filepath.Dir(*dictionary.InputPathPtr), OutputDir)
-	if _, err := os.Stat(outDirName); errors.Is(err, os.ErrNotExist) {
-		err := os.MkdirAll(outDirName, os.ModePerm)
-		if err != nil {
-			exit.ExitWithError(err, outDirName)
-		}
-	}
-
-	absPath, _ := filepath.Abs(outDirName)
-	for i := range InputFilenames {
-		OutputFilePaths = append(OutputFilePaths, filepath.Join(absPath, InputFilenames[i]))
-	}
-}
-
-func PrepareOutputDirectoryForZip(inputDirectoryPath string, inputFilePaths []string, outputDirectoryPath string) (outputFilePaths []string) {
+func PrepareOutputDirectory(inputDirectoryPath string, inputFilePaths []string, outputDirectoryPath string) (outputFilePaths []string) {
 	if _, err := os.Stat(outputDirectoryPath); errors.Is(err, os.ErrNotExist) {
 		err := os.MkdirAll(outputDirectoryPath, os.ModePerm)
 		if err != nil {
@@ -121,33 +87,33 @@ func PrepareZipDirectories(inputFilePath string) (tempDir string, outputDir stri
 	// Create a temporary directory with a custom prefix
 	tempDir, err := os.MkdirTemp("", dirName)
 	if err != nil {
-		exit.ExitWithError(err, "Error creating temporary directory")
+		exit.ExitWithError(err, "Error creating temporary directory"+dirName)
 	}
 
 	outputDir, err = os.MkdirTemp("", "output")
 	if err != nil {
-		exit.ExitWithError(err, "Error creating temporary directory")
+		exit.ExitWithError(err, "Error creating temporary directory: output")
 	}
 
 	return tempDir, outputDir
 }
 
-func prepareInputFile() {
-	if strings.HasPrefix(*dictionary.InputPathPtr, "http") {
+func prepareInputFile() (inputFilePaths []string) {
+	if strings.HasPrefix(*InputPathPtr, "http") {
 		prepareInputFileFromInternet()
 	}
 
 	// strip directories from the input filepath if exist
-	InputFilenames = append(InputFilenames, filepath.Base(*dictionary.InputPathPtr))
-	absPath, _ := filepath.Abs(*dictionary.InputPathPtr)
-	InputFilePaths = append(InputFilePaths, absPath)
+	absPath, _ := filepath.Abs(*InputPathPtr)
+	inputFilePaths = append(inputFilePaths, absPath)
+	return inputFilePaths
 }
 
 func prepareInputFileFromInternet() {
 	var err error
-	if strings.HasSuffix(*dictionary.InputPathPtr, "/") {
+	if strings.HasSuffix(*InputPathPtr, "/") {
 		err = errors.New("тренутно није дозвољено да се URL завршава са /")
-		exit.ExitWithError(err, *dictionary.InputPathPtr)
+		exit.ExitWithError(err, *InputPathPtr)
 	}
 
 	tmpDir := "tmp"
@@ -161,11 +127,11 @@ func prepareInputFileFromInternet() {
 
 	var response *grab.Response
 	//download file to the tmp directory
-	response, err = grab.Get(tmpDir, *dictionary.InputPathPtr)
+	response, err = grab.Get(tmpDir, *InputPathPtr)
 	if err != nil {
-		exit.ExitWithError(err, *dictionary.InputPathPtr)
+		exit.ExitWithError(err, *InputPathPtr)
 	}
-	*dictionary.InputPathPtr = response.Filename
+	*InputPathPtr = response.Filename
 }
 
 func isDirectory(path string) (bool, error) {
@@ -189,19 +155,19 @@ func ProcessFlags() {
 }
 
 func CheckFlags() {
-	if *dictionary.InputPathPtr != "" {
+	if *InputPathPtr != "" {
 		// file no matter config
-		if *dictionary.L2cPtr == *dictionary.C2lPtr || *dictionary.HtmlPtr || *dictionary.TextPtr {
+		if *L2cPtr == *C2lPtr || *HtmlPtr || *TextPtr {
 			exit.ExitWithHelp()
 		}
 	} else {
 		// std in
 		arguments := os.Args[1:]
-		if *dictionary.ConfigPtr {
+		if *ConfigPtr {
 			// config
 			if len(arguments) == 1 {
 				// program called only with -c flag so we test config
-				if *dictionary.L2cPtr == *dictionary.C2lPtr || *dictionary.HtmlPtr == *dictionary.TextPtr {
+				if *L2cPtr == *C2lPtr || *HtmlPtr == *TextPtr {
 					exit.ExitWithHelp()
 				}
 			} else {
@@ -210,36 +176,27 @@ func CheckFlags() {
 			}
 		} else {
 			// no config
-			if *dictionary.L2cPtr == *dictionary.C2lPtr || *dictionary.HtmlPtr == *dictionary.TextPtr {
+			if *L2cPtr == *C2lPtr || *HtmlPtr == *TextPtr {
 				exit.ExitWithHelp()
 			}
 		}
 	}
 }
 
-func ProcessFilePaths() {
-	if *dictionary.InputPathPtr != "" {
-		isDirectory, err := isDirectory(*dictionary.InputPathPtr)
+func ProcessFilePaths() (inputFilePaths []string, outputFilePaths []string) {
+	if *InputPathPtr != "" {
+		isDirectory, err := isDirectory(*InputPathPtr)
 		if err != nil {
-			exit.ExitWithError(err, *dictionary.InputPathPtr)
+			exit.ExitWithError(err, *InputPathPtr)
 		}
-
 		if isDirectory {
-			prepareInputDirectory()
+			inputFilePaths = PrepareInputDirectory(*InputPathPtr)
 		} else {
-			prepareInputFile()
+			inputFilePaths = prepareInputFile()
 		}
 
-		prepareOutputDirectory()
+		outputDirectoryPath := filepath.Join(filepath.Dir(*InputPathPtr), OutputDir)
+		outputFilePaths = PrepareOutputDirectory(*InputPathPtr, inputFilePaths, outputDirectoryPath)
 	}
-}
-
-func DetectFileType(filePath string) (string, string) {
-	mediaType, err := mimetype.DetectFile(filePath)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(mediaType.String(), mediaType.Extension())
-
-	return mediaType.String(), mediaType.Extension()
+	return inputFilePaths, outputFilePaths
 }
