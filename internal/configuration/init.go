@@ -4,16 +4,18 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/eevan78/translit/internal/dictionary"
 	"github.com/eevan78/translit/internal/terminal"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
-var configuration Configurations
+var (
+	configuration Configurations
+	configVersion string
+)
 
 func ConfigInit() {
-	if *dictionary.ConfigPtr {
+	if *terminal.ConfigPtr {
 		readConfig()
 		initVars()
 		initFlags()
@@ -40,7 +42,7 @@ func initVars() {
 	defaultVars()
 
 	terminal.OutputDir = viper.GetString("OutputDir")
-	dictionary.ConfigVersion = viper.GetString("Version")
+	configVersion = viper.GetString("Version")
 }
 
 func defaultVars() {
@@ -51,9 +53,9 @@ func defaultVars() {
 func initFlags() {
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	viper.BindPFlags(pflag.CommandLine)
-	*dictionary.C2lPtr = configuration.C2lPtr
-	*dictionary.L2cPtr = configuration.L2cPtr
-	*dictionary.HtmlPtr = configuration.HtmlPtr
-	*dictionary.TextPtr = configuration.TextPtr
-	*dictionary.InputPathPtr = configuration.InputPathPtr
+	*terminal.C2lPtr = configuration.C2lPtr
+	*terminal.L2cPtr = configuration.L2cPtr
+	*terminal.HtmlPtr = configuration.HtmlPtr
+	*terminal.TextPtr = configuration.TextPtr
+	*terminal.InputPathPtr = configuration.InputPathPtr
 }

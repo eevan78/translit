@@ -18,9 +18,9 @@ func main() {
 
 	terminal.CheckFlags()
 
-	terminal.ProcessFilePaths()
+	inputFilePaths, outputFilePaths := terminal.ProcessFilePaths()
 
-	documents := language.CreateDocuments()
+	documents := language.CreateDocuments(inputFilePaths, outputFilePaths)
 
 	language.Transliterate(documents)
 

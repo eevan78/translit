@@ -47,14 +47,14 @@ loop:
 					words[n] = fixPunctuation(words[n])
 					continue
 				}
-				if *dictionary.L2cPtr {
+				if *terminal.L2cPtr {
 					index := transliterationIndexOfWordStartsWith(strings.ToLower(words[n]), dictionary.WholeForeignWords, "-")
 					if index >= 0 {
 						words[n] = string(words[n][:index]) + l2c(string(words[n][index:]))
 					} else if !looksLikeForeignWord(words[n]) {
 						words[n] = l2c(words[n])
 					}
-				} else if *dictionary.C2lPtr {
+				} else if *terminal.C2lPtr {
 					words[n] = c2l(words[n])
 				}
 			}

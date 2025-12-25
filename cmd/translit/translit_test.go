@@ -13,17 +13,16 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/eevan78/translit/internal/dictionary"
 	"github.com/eevan78/translit/internal/terminal"
 )
 
 func TestReadingFromStdin(t *testing.T) {
 	if os.Getenv("DO_TEST_X") == "1" {
-		*dictionary.L2cPtr = true
-		*dictionary.C2lPtr = false
-		*dictionary.HtmlPtr = false
-		*dictionary.TextPtr = true
-		*dictionary.InputPathPtr = ""
+		*terminal.L2cPtr = true
+		*terminal.C2lPtr = false
+		*terminal.HtmlPtr = false
+		*terminal.TextPtr = true
+		*terminal.InputPathPtr = ""
 		flag.Parse()
 		main()
 		return
@@ -58,19 +57,17 @@ func TestReadingFromStdin(t *testing.T) {
 	fmt.Fprintf(os.Stderr, "Добијени излаз из филтера је:\n%s\n", string(capture))
 	if output == string(capture) {
 		fmt.Fprintln(os.Stderr, "Ухваћен је очекивани излаз!")
-		clearData()
 		return
 	}
 
-	clearData()
 	t.Fatalf("Није успело читање са стандардног улаза: %v", err)
 
 }
 
 func TestL2CHtmlInputFileFromInternet(t *testing.T) {
-	*dictionary.L2cPtr = true
-	*dictionary.C2lPtr = false
-	*dictionary.InputPathPtr = "https://www.k1info.rs/kultura-i-umetnost/knjige/33243/bestseler-debitantski-roman-melisa-da-kosta/vest"
+	*terminal.L2cPtr = true
+	*terminal.C2lPtr = false
+	*terminal.InputPathPtr = "https://www.k1info.rs/kultura-i-umetnost/knjige/33243/bestseler-debitantski-roman-melisa-da-kosta/vest"
 	flag.Parse()
 
 	main()
@@ -86,9 +83,9 @@ func TestL2CHtmlInputFileFromInternet(t *testing.T) {
 
 func TestL2CHtmlInputFileFromInternetWithTrailingSlash(t *testing.T) {
 	if os.Getenv("DO_TEST") == "1" {
-		*dictionary.L2cPtr = true
-		*dictionary.C2lPtr = false
-		*dictionary.InputPathPtr = "https://zadovoljna.nova.rs/fitnes-i-ishrana/francuski-tost-przenice-iz-rerne/"
+		*terminal.L2cPtr = true
+		*terminal.C2lPtr = false
+		*terminal.InputPathPtr = "https://zadovoljna.nova.rs/fitnes-i-ishrana/francuski-tost-przenice-iz-rerne/"
 		flag.Parse()
 		main()
 		return
@@ -100,19 +97,17 @@ func TestL2CHtmlInputFileFromInternetWithTrailingSlash(t *testing.T) {
 	fmt.Printf("Излаз: %s", out)
 	if e, ok := err.(*exec.ExitError); ok && !e.Success() {
 		//Program exits with code 1 and prints expected message: Тренутно није дозвољено да се URL завршава са /
-		clearData()
 		return
 	}
 
-	clearData()
 	t.Fatalf("Процес је бацио грешку %v, а требало је да статус изласка из програма буде 1", err)
 
 }
 
 func TestL2CTextInputFile(t *testing.T) {
-	*dictionary.L2cPtr = true
-	*dictionary.C2lPtr = false
-	*dictionary.InputPathPtr = "../../test/testdata/rec_godine.txt"
+	*terminal.L2cPtr = true
+	*terminal.C2lPtr = false
+	*terminal.InputPathPtr = "../../test/testdata/rec_godine.txt"
 	flag.Parse()
 
 	expectedOutput, _ := filepath.Abs("../../test/testdata/rec_godine_izlaz.txt")
@@ -123,9 +118,9 @@ func TestL2CTextInputFile(t *testing.T) {
 }
 
 func TestL2CXmlInputFile(t *testing.T) {
-	*dictionary.L2cPtr = true
-	*dictionary.C2lPtr = false
-	*dictionary.InputPathPtr = "../../test/testdata/xmltest.xml"
+	*terminal.L2cPtr = true
+	*terminal.C2lPtr = false
+	*terminal.InputPathPtr = "../../test/testdata/xmltest.xml"
 	flag.Parse()
 
 	expectedOutput, _ := filepath.Abs("../../test/testdata/xmltest_izlaz.xml")
@@ -166,15 +161,8 @@ func compareExpected(t *testing.T, expectedOutput string) {
 	}
 }
 
-func clearData() {
-	terminal.InputFilenames = nil
-	terminal.InputFilePaths = nil
-	terminal.OutputFilePaths = nil
-}
-
 func cleanOutput() {
-	clearData()
-	outDirPath := filepath.Join(filepath.Dir(*dictionary.InputPathPtr), terminal.OutputDir)
+	outDirPath := filepath.Join(filepath.Dir(*terminal.InputPathPtr), terminal.OutputDir)
 	absDirectoryPath, _ := filepath.Abs(outDirPath)
 	if err := os.RemoveAll(absDirectoryPath); err != nil {
 		fmt.Fprintf(os.Stderr, "Није успело брисање излазног директоријума: %v\n", err)
@@ -184,7 +172,6 @@ func cleanOutput() {
 }
 
 func cleanTmp() {
-	clearData()
 	absDirectoryPath, _ := filepath.Abs("tmp")
 	if err := os.RemoveAll(absDirectoryPath); err != nil {
 		fmt.Fprintf(os.Stderr, "Није успело брисање привременог директоријума: %v\n", err)
@@ -202,9 +189,9 @@ func checksumSHA256(f io.Reader) string {
 }
 
 func getOutputFileName() string {
-	outDirPath := filepath.Join(filepath.Dir(*dictionary.InputPathPtr), terminal.OutputDir)
+	outDirPath := filepath.Join(filepath.Dir(*terminal.InputPathPtr), terminal.OutputDir)
 	absDirectoryPath, _ := filepath.Abs(outDirPath)
-	absFilenamePath := filepath.Join(absDirectoryPath, filepath.Base(*dictionary.InputPathPtr))
+	absFilenamePath := filepath.Join(absDirectoryPath, filepath.Base(*terminal.InputPathPtr))
 
 	return absFilenamePath
 }
